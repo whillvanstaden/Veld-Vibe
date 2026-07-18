@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Veld Vibe | Premium German Parkas & hand crafted genuine Leather Vellies</title>
+
+    <link rel="stylesheet" href="style.css">
+
+    <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;600;700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet"
+href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
+</head>
+
+<body>
+
+
+<section class="hero">
+
+    <div class="hero-card">
+
+        <div class="hero-left">
+
+            <img src="images/Logo 2.png" alt="Veld Vibe" class="hero-logo">
+
+<h1>
+    PREMIUM GERMAN PARKAS &<br>
+    HAND CRAFTED GENUINE<br>
+    LEATHER VELLIES
+</h1>
+
+            <p class="hero-sub">
+                Sold by Veld Vibe
+            </p>
+
+            <a href="#products" class="btn hero-btn">
+    Shop Collection
+</a>
+
+        </div>
+
+        <div class="hero-right">
+
+            <img src="images/Hero.png" alt="German Parkas">
+
+        </div>
+
+    </div>
+
+    <div class="hero-features">
+
+       <div class="feature">
+    <i class="fa-regular fa-shield"></i>
+
+    <div>
+        <h4>Premium Quality</h4>
+        <p>German engineered parkas built for any condition.</p>
+    </div>
+</div>
+
+        <div class="feature">
+    <i class="fa-solid fa-certificate"></i>
+
+    <div>
+        <h4>Genuine Leather</h4>
+        <p>Hand crafted vellies made from 100% genuine leather.</p>
+    </div>
+</div>
+
+        <div class="feature">
+            <img src="images/icon-award.png" alt="">
+            <div>
+                <h4>Built to Last</h4>
+                <p>Designed for your Vibe.</p>
+            </div>
+        </div>
+
+        <div class="feature">
+    <i class="fa-solid fa-truck"></i>
+
+    <div>
+        <h4>Nationwide Delivery</h4>
+        <p><strong>R100</strong> anywhere in South Africa.<br>
+        <strong>Collection:</strong> Alberton, Johannesburg.</p>
+    </div>
+</div>
+
+    </div>
+
+</section>
+
+<main>
+
+<section id="products" class="products">
+
+    <h2>German Parkas</h2>
+
+    <p class="section-intro">
+        Choose your collection below.
+    </p>
+
+    <div class="product-grid">
+        <div class="card">
+
+            <img src="images/Mens Parka Jackets Side.png" alt="Mens Parka">
+
+            <h3>Men's Parkas</h3>
+
+            <p>S–5XL</p>
+
+            <p class="price">
+                From R1680
+            </p>
+
+            <button class="btn">
+                View Options
+            </button>
+
+        </div>
+
+        <div class="card">
+
+            <img src="images/Ladies Parka Jackets.png" alt="Ladies Parka">
+
+            <h3>Ladies' Parkas</h3>
+
+            <p>3XS–10XL</p>
+
+            <p class="price">
+                From R1400
+            </p>
+
+            <button class="btn">
+                View Options
+            </button>
+
+        </div>
+
+        <div class="card">
+
+            <img src="images/Parka kids.png" alt="Kids Parka">
+
+            <h3>Kids' Parkas</h3>
+
+            <p>5XS–4XL</p>
+
+            <p class="price">
+                From R1480
+            </p>
+
+            <button class="btn">
+                View Options
+            </button>
+
+        </div>
+
+    </div>
+
+</section><section class="products">
+
+    <h2>Leather Vellies</h2>
+
+    <p class="section-intro">
+        Handcrafted from 100% genuine leather for everyday comfort and durability.
+    </p>
+
+    <div class="product-grid">
+
+        <div class="card">
+
+            <img src="images/Slip-on Chelsea Boot - Tan.png" alt="Chelsea Boot">
+
+            <h3>Chelsea Boot</h3>
+
+            <p>100% Genuine Leather</p>
+
+            <p class="price">
+                R990
+            </p>
+
+            <button class="btn">
+                View Options
+            </button>
+
+        </div>
+
+        <div class="card">
+
+            <img src="images/Lace-up Vellie Shoe.png" alt="Lace-up Vellie">
+
+            <h3>Lace-up Vellie</h3>
+
+            <p>100% Genuine Leather</p>
+
+            <p class="price">
+                R850
+            </p>
+
+            <button class="btn">
+                View Options
+            </button>
+
+        </div>
+
+    </div>
+
+</section>
+
+<section class="products">
+
+    <h2>Size Guide</h2>
+
+    <p class="section-intro">
+        Please use the measurements below before placing your order.
+    </p>
+
+    <img
+        src="images/Size.png"
+        alt="Size Guide"
+        class="size-guide">
+
+</section><section class="products">
+
+    <h2>Personalise Your Vellies</h2>
+
+    <p class="section-intro">
+        Add your company branding to create a unique pair of handcrafted vellies.
+    </p>
+<div class="branding-content">
+    <div class="branding-box">
+
+        <h3>Custom Branding</h3>
+
+        <p>
+            We can personalise your vellies with your company logo or custom branding.
+        </p>
+
+        <p>
+            A once-off fee of <strong>R790</strong> applies to manufacture your branding die.
+        </p>
+
+        <ul>
+
+            <li>Businesses</li>
+
+            <li>Schools</li>
+
+            <li>Sports Clubs</li>
+
+            <li>Corporate Gifts</li>
+
+            <li>Hunting Groups</li>
+
+            <li>Events</li>
+
+        </ul>
+
+    </div>
+
+    </div>
+</sec<section class="products">
+
+
+
+<section class="delivery-section">
+
+    <h2>Place Your Order</h2>
+
+    <div class="delivery-content">
+
+        <div class="delivery-image">
+
+            <img src="images/Delivery.png" alt="Delivery">
+
+        </div>
+
+        <div class="delivery-info">
+
+            <div class="delivery-item">
+
+                <h3>Nationwide Delivery</h3>
+
+                <p><strong>R100</strong> anywhere in South Africa.</p>
+
+            </div>
+
+            <div class="delivery-item">
+
+                <h3>Collection</h3>
+
+                <p>Available from <strong>Alberton, Johannesburg</strong>.</p>
+
+            </div>
+
+            <a href="#" class="btn">Order via WhatsApp</a>
+
+        </div>
+
+    </div>
+
+</section>
+
+</main>
+
+<footer>
+
+    <img src="images/Logo 2.png"
+         alt="Veld Vibe"
+         class="footer-logo">
+
+    <h2>
+        DESIGNED FOR YOUR VIBE.<br>
+        MADE TO LAST.
+    </h2>
+
+    <a href="https://wa.me/YOURNUMBER" class="btn">
+        Order via WhatsApp
+    </a>
+
+    <p class="supplier">
+        Parkas and vellies are premium products proudly supplied by National Clothing Distributors.
+    </p>
+
+    <p class="copyright">
+        © 2026 Veld Vibe.
+    </p>
+
+</footer>
