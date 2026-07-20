@@ -698,7 +698,7 @@ ul{
     margin:0 auto;
     font-size:22px;
     color:#6d5b49;
-    white-space:nowrap;
+    white-space:normal;
 }
 
 .size-guide-card{
@@ -2076,7 +2076,7 @@ align-items:start;
 
     background: #ffffff;
 
-    padding: 40px;
+    padding: 25px;
 
     border-radius: 20px;
 
