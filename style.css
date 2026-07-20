@@ -660,8 +660,10 @@ ul{
     }
 
     .sizes{
-        font-size:17px;
-    }
+  .sizes{
+    font-size:15px;
+    white-space:nowrap;
+}
 
     }
 /* =====================================================
