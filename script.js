@@ -93,7 +93,7 @@ chelsea: {
 
     title: "BUY CHELSEA BOOT",
 
-    image: "images/Slip-on Chelsea Boot.png",
+    image: "images/Slip-on Chelsea Boot - Tan.png",
 
     sizes: [
         {name: "5", price: 990},

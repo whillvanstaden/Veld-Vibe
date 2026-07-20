@@ -17,4 +17,27 @@ if (order) {
 
     document.getElementById("checkoutTotal").innerHTML =
         "R" + order.total;
+        if (order.delivery == "100") {
+
+    document.getElementById("checkoutButton").innerHTML =
+        "PAY SECURELY";
+
+    document.getElementById("deliveryAddress").style.display =
+        "block";
+
+    document.getElementById("collectionInfo").style.display =
+        "none";
+
+} else {
+
+    document.getElementById("checkoutButton").innerHTML =
+        "SUBMIT COLLECTION REQUEST";
+
+    document.getElementById("deliveryAddress").style.display =
+        "none";
+
+    document.getElementById("collectionInfo").style.display =
+        "block";
+
+}
 }
