@@ -242,14 +242,15 @@ document.getElementById("continueCheckout").onclick = function(){
         'input[name="delivery"]:checked'
     ).value;
 
-    const order = {
+const order = {
 
-        product: selectedProduct,
-        size: selectedSize,
-        delivery: delivery,
-        total: selectedPrice + Number(delivery)
+    product: selectedProduct,
+    size: selectedSize,
+    quantity: selectedQuantity,
+    delivery: delivery,
+    total: (selectedPrice * selectedQuantity) + Number(delivery)
 
-    };
+};
 
     localStorage.setItem(
     "veldVibeOrder",

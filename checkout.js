@@ -9,6 +9,8 @@ if (order) {
 
     document.getElementById("checkoutSize").innerHTML =
         order.size;
+        document.getElementById("checkoutQuantity").innerHTML =
+    order.quantity;
 
     document.getElementById("checkoutDelivery").innerHTML =
         order.delivery == "100"
