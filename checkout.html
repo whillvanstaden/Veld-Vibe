@@ -15,129 +15,200 @@
 
 </head>
 
+
 <body>
 
-    <section class="checkout">
 
-        <div class="checkout-container">
+<section class="checkout">
 
-            <h1>CHECKOUT</h1>
+    <div class="checkout-container">
 
-            <div class="checkout-grid">
+        <h1>CHECKOUT</h1>
 
-                <!-- CUSTOMER DETAILS -->
 
-                <div class="checkout-form">
+        <div class="checkout-grid">
 
-                    <h2>Your Details</h2>
 
-                    <input type="text"
-                           placeholder="First Name">
+            <!-- CUSTOMER DETAILS -->
 
-                    <input type="text"
-                           placeholder="Surname">
+            <div class="checkout-form">
 
-                    <input type="tel"
-                           placeholder="Phone Number">
+                <h2>Your Details</h2>
 
-                    <input type="email"
-                           placeholder="Email (optional)">
-                           <div id="deliveryAddress">
 
-    <h4>DELIVERY ADDRESS</h4>
+                <input
+                    type="text"
+                    id="firstName"
+                    placeholder="First Name"
+                >
 
-    <textarea placeholder="Enter your delivery address"></textarea>
 
-</div>
-<div id="collectionInfo">
+                <input
+                    type="text"
+                    id="surname"
+                    placeholder="Surname"
+                >
 
-    <h4>COLLECTION DETAILS</h4>
 
-    <p>
+                <input
+                    type="tel"
+                    id="phoneNumber"
+                    placeholder="Phone Number"
+                >
 
-        Visit us: 12 Borax Street, Alrode, Alberton.
 
-        <br><br>
+                <input
+                    type="email"
+                    id="email"
+                    placeholder="Email (optional)"
+                >
 
-        Products and sizes are subject to availability.
 
-        Your collection request will be sent directly to our team, together with your selected items and contact details.
+                <!-- DELIVERY ADDRESS -->
 
-        When visiting the showroom, you qualify for Veld Vibe website pricing.
+                <div id="deliveryAddress">
 
-    </p>
+                    <h4>DELIVERY ADDRESS</h4>
 
-</div>
-                   
+                    <textarea
+                        id="address"
+                        placeholder="Enter your delivery address"
+                    ></textarea>
 
                 </div>
 
-                <!-- ORDER SUMMARY -->
 
-                <div class="checkout-summary">
+                <!-- COLLECTION INFORMATION -->
 
-                    <h2>Your Order</h2>
+                <div id="collectionInfo">
 
-                    <p>
-
-                        Product:
-
-                        <strong id="checkoutProduct">
-
-                        </strong>
-
-                    </p>
+                    <h4>COLLECTION DETAILS</h4>
 
                     <p>
 
-                        Size:
+                        Visit us: 12 Borax Street,
+                        Alrode, Alberton.
 
-                        <strong id="checkoutSize">
+                        <br><br>
 
-                        </strong>
+                        Products and sizes are subject
+                        to availability.
+
+                        <br><br>
+
+                        Your collection request will be
+                        sent directly to our team,
+                        together with your selected
+                        items and contact details.
+
+                        <br><br>
+
+                        When visiting the showroom,
+                        you qualify for Veld Vibe
+                        website pricing.
 
                     </p>
-<p>
-    Quantity:
-    <strong id="checkoutQuantity"></strong>
-</p>
-                    <p>
-
-                        Delivery:
-
-                        <strong id="checkoutDelivery">
-
-                        </strong>
-
-                    </p>
-
-                    <hr>
-
-                    <h3>
-
-                        Total:
-
-                        <span id="checkoutTotal">
-
-                        </span>
-
-                    </h3>
-
-                   <button class="hero-button" id="checkoutButton">
-
-    SUBMIT COLLECTION REQUEST
-
-</button>
 
                 </div>
 
             </div>
 
+
+            <!-- ORDER SUMMARY -->
+
+            <div class="checkout-summary">
+
+                <h2>Your Order</h2>
+
+
+                <div id="checkoutItems">
+
+                    <!-- CART ITEMS WILL APPEAR HERE -->
+
+                </div>
+
+
+                <hr>
+
+
+                <p>
+
+                    Total items:
+
+                    <strong id="checkoutQuantity">
+                        0
+                    </strong>
+
+                </p>
+
+
+                <p>
+
+                    Subtotal:
+
+                    <strong id="checkoutSubtotal">
+                        R0
+                    </strong>
+
+                </p>
+
+
+                <!-- DELIVERY -->
+
+                <p>
+
+                    Delivery:
+
+                    <strong id="checkoutDelivery">
+                    </strong>
+
+                </p>
+
+
+                <hr>
+
+
+                <h3>
+
+                    Total:
+
+                    <span id="checkoutTotal">
+                        R0
+                    </span>
+
+                </h3>
+
+
+                <button
+                    type="button"
+                    class="hero-button"
+                    id="backToCart"
+                >
+                    EDIT CART
+                </button>
+
+
+                <button
+                    type="button"
+                    class="hero-button"
+                    id="checkoutButton"
+                >
+                    PAY SECURELY
+                </button>
+
+
+            </div>
+
+
         </div>
 
-    </section>
+    </div>
 
-    <script src="checkout.js"></script>
+</section>
+
+
+<script src="checkout.js"></script>
+
 
 </body>
 

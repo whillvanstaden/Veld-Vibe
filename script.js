@@ -124,162 +124,1094 @@ laceup: {
 }
 };
 let selectedProduct = "";
-let selectedSize = "";
-let selectedPrice = 0;
-let selectedQuantity = 1;
+let selectedSizes = {};
+
+
+// ======================================
+// CART
+// ======================================
+
+let cart = JSON.parse(
+    localStorage.getItem("veldVibeCart")
+) || [];
+
+
+// ======================================
+// SAVE CART
+// ======================================
+
+function saveCart() {
+
+    localStorage.setItem(
+        "veldVibeCart",
+        JSON.stringify(cart)
+    );
+
+    updateCartButton();
+
+}
+
+
 // ======================================
 // OPEN PRODUCT POPUP
 // ======================================
-function openBuyModal(product){
+
+function openBuyModal(product) {
 
     const item = products[product];
 
     selectedProduct = product;
-selectedQuantity = 1;
+    selectedSizes = {};
 
-document.getElementById("quantityValue").innerHTML = selectedQuantity;
     document.getElementById("buyModal").style.display = "flex";
-document.getElementById("continueCheckout").disabled = true;
-    document.getElementById("modalTitle").innerHTML = item.title;
 
-    document.getElementById("modalImage").src = item.image;
+    document.getElementById("continueCheckout").disabled = true;
 
-    document.getElementById("modalImage").alt = item.title;
+    document.getElementById("continueCheckout").innerHTML =
+        "ADD TO CART";
 
-    const sizeContainer = document.getElementById("sizeOptions");
+    document.getElementById("modalTitle").innerHTML =
+        item.title;
+
+    document.getElementById("modalImage").src =
+        item.image;
+
+    document.getElementById("modalImage").alt =
+        item.title;
+
+    const sizeContainer =
+        document.getElementById("sizeOptions");
 
     sizeContainer.innerHTML = "";
 
+
     item.sizes.forEach(size => {
 
-        const button = document.createElement("button");
+        const row =
+            document.createElement("div");
 
-        button.className = "size-btn";
+        row.className =
+            "size-selection-row";
 
-        button.innerHTML = size.name;
 
-       button.addEventListener("click", function () {
+        // SIZE
 
-    document
-        .querySelectorAll(".size-btn")
-        .forEach(btn => btn.classList.remove("active"));
+        const sizeButton =
+            document.createElement("button");
 
-    
-    button.classList.add("active");
+        sizeButton.type = "button";
 
-selectedSize = size.name;
+        sizeButton.className =
+            "size-btn";
 
-selectedPrice = Number(size.price);
+        sizeButton.innerHTML =
+            size.name;
 
-document.getElementById("continueCheckout").disabled = false;
 
-updateTotal();
+        // MINUS
 
-});
+        const minusButton =
+            document.createElement("button");
 
-        sizeContainer.appendChild(button);
+        minusButton.type = "button";
+
+        minusButton.className =
+            "size-minus";
+
+        minusButton.innerHTML =
+            "−";
+
+
+        // QUANTITY
+
+        const quantityDisplay =
+            document.createElement("span");
+
+        quantityDisplay.className =
+            "size-quantity";
+
+        quantityDisplay.innerHTML =
+            "0";
+
+
+        // PLUS
+
+        const plusButton =
+            document.createElement("button");
+
+        plusButton.type = "button";
+
+        plusButton.className =
+            "size-plus";
+
+        plusButton.innerHTML =
+            "+";
+
+
+        // UPDATE THIS SIZE
+
+        function updateSizeDisplay() {
+
+            const selected =
+                selectedSizes[size.name];
+
+            const quantity =
+                selected
+                    ? selected.quantity
+                    : 0;
+
+            quantityDisplay.innerHTML =
+                quantity;
+
+            if (quantity > 0) {
+
+                sizeButton.classList.add("active");
+
+            } else {
+
+                sizeButton.classList.remove("active");
+
+            }
+
+            updateProductTotal();
+
+        }
+
+
+        // ADD ONE OF THIS SIZE
+
+        function addSize() {
+
+            if (!selectedSizes[size.name]) {
+
+                selectedSizes[size.name] = {
+
+                    quantity: 1,
+
+                    price: Number(size.price)
+
+                };
+
+            } else {
+
+                selectedSizes[size.name].quantity++;
+
+            }
+
+            updateSizeDisplay();
+
+        }
+
+
+        // REMOVE ONE OF THIS SIZE
+
+        function removeSize() {
+
+            if (!selectedSizes[size.name]) {
+
+                return;
+
+            }
+
+            selectedSizes[size.name].quantity--;
+
+
+            if (
+                selectedSizes[size.name].quantity <= 0
+            ) {
+
+                delete selectedSizes[size.name];
+
+            }
+
+            updateSizeDisplay();
+
+        }
+
+
+        // SIZE BUTTON = ADD ONE
+
+        sizeButton.addEventListener(
+            "click",
+            addSize
+        );
+
+
+        // PLUS = ADD ONE
+
+        plusButton.addEventListener(
+            "click",
+            addSize
+        );
+
+
+        // MINUS = REMOVE ONE
+
+        minusButton.addEventListener(
+            "click",
+            removeSize
+        );
+
+
+        row.appendChild(sizeButton);
+
+        row.appendChild(minusButton);
+
+        row.appendChild(quantityDisplay);
+
+        row.appendChild(plusButton);
+
+
+        sizeContainer.appendChild(row);
 
     });
 
-    updateTotal();
+
+    updateProductTotal();
 
 }
 
+
 // ======================================
-// CLOSE POPUP
+// UPDATE PRODUCT TOTAL
 // ======================================
 
-document.querySelector(".close-modal").onclick = function(){
+function updateProductTotal() {
 
-    document.getElementById("buyModal").style.display = "none";
+    let totalQuantity = 0;
 
-}
+    let productTotal = 0;
 
-window.onclick = function(event){
 
-    const modal = document.getElementById("buyModal");
+    Object.keys(selectedSizes).forEach(size => {
 
-    if(event.target == modal){
+        const item =
+            selectedSizes[size];
 
-        modal.style.display = "none";
+        totalQuantity +=
+            item.quantity;
+
+        productTotal +=
+            item.price * item.quantity;
+
+    });
+
+
+    const quantityElement =
+        document.getElementById("quantityValue");
+
+    const totalElement =
+        document.getElementById("orderTotal");
+
+
+    if (quantityElement) {
+
+        quantityElement.innerHTML =
+            totalQuantity;
+
+    }
+
+
+    if (totalElement) {
+
+        totalElement.innerHTML =
+            "R" + productTotal;
+
+    }
+
+
+    const checkoutButton =
+        document.getElementById("continueCheckout");
+
+
+    if (checkoutButton) {
+
+        checkoutButton.disabled =
+            totalQuantity === 0;
 
     }
 
 }
 
+
 // ======================================
-// EXISTING WHATSAPP FUNCTION
+// CLOSE PRODUCT POPUP
 // ======================================
-function updateTotal() {
 
-    let delivery = Number(
-        document.querySelector('input[name="delivery"]:checked').value
-    );
-
-    document.getElementById("orderTotal").innerHTML =
-       "R" + ((selectedPrice * selectedQuantity) + delivery);
+const closeBuyModal =
+    document.querySelector(".close-modal");
 
 
-  }
-document
-    .querySelectorAll('input[name="delivery"]')
-    .forEach(option => {
+if (closeBuyModal) {
 
-        option.addEventListener("change", function(){
+    closeBuyModal.onclick = function () {
 
-            updateTotal();
+        document.getElementById("buyModal").style.display =
+            "none";
+
+    };
+
+}
+
+
+window.addEventListener(
+    "click",
+    function (event) {
+
+        const modal =
+            document.getElementById("buyModal");
+
+        if (
+            event.target === modal
+        ) {
+
+            modal.style.display =
+                "none";
+
+        }
+
+    }
+);
+
+
+// ======================================
+// ADD PRODUCT TO CART
+// ======================================
+
+const addToCartButton =
+    document.getElementById("continueCheckout");
+
+
+if (addToCartButton) {
+
+    addToCartButton.onclick = function () {
+
+        if (
+            Object.keys(selectedSizes).length === 0
+        ) {
+
+            return;
+
+        }
+
+
+        // Get the delivery method selected
+        // by the customer.
+
+        const deliveryInput =
+            document.querySelector(
+                'input[name="delivery"]:checked'
+            );
+
+
+        const delivery =
+            deliveryInput
+                ? Number(deliveryInput.value)
+                : 100;
+
+
+        // Find this product in the cart.
+
+        let cartProduct =
+            cart.find(
+                item =>
+                    item.product === selectedProduct
+            );
+
+
+        // Create the product if it
+        // isn't already in the cart.
+
+        if (!cartProduct) {
+
+            cartProduct = {
+
+                product: selectedProduct,
+
+                sizes: {}
+
+            };
+
+            cart.push(cartProduct);
+
+        }
+
+
+        // Add each selected size.
+
+        Object.keys(selectedSizes).forEach(size => {
+
+            const selected =
+                selectedSizes[size];
+
+
+            if (
+                cartProduct.sizes[size]
+            ) {
+
+                cartProduct.sizes[size].quantity +=
+                    selected.quantity;
+
+            } else {
+
+                cartProduct.sizes[size] = {
+
+                    quantity:
+                        selected.quantity,
+
+                    price:
+                        selected.price
+
+                };
+
+            }
+
+        });
+
+
+        // Save the delivery method
+        // for this order.
+
+        localStorage.setItem(
+            "veldVibeDelivery",
+            String(delivery)
+        );
+
+
+        saveCart();
+
+
+        // Close the product popup.
+
+        document.getElementById(
+            "buyModal"
+        ).style.display = "none";
+
+
+        // Open the cart.
+
+        openCart();
+
+    };
+
+}
+// ======================================
+// OPEN CART
+// ======================================
+
+function openCart() {
+
+    let cartModal =
+        document.getElementById("cartModal");
+
+
+    if (!cartModal) {
+
+        createCartModal();
+
+        cartModal =
+            document.getElementById("cartModal");
+
+    }
+
+
+    renderCart();
+
+    cartModal.style.display =
+        "flex";
+
+}
+
+
+// ======================================
+// CREATE CART
+// ======================================
+
+function createCartModal() {
+
+    const modal =
+        document.createElement("div");
+
+    modal.id =
+        "cartModal";
+
+    modal.className =
+        "cart-modal";
+
+
+    modal.innerHTML = `
+
+        <div class="cart-container">
+
+            <button
+                class="cart-close"
+                id="cartClose"
+            >
+                ×
+            </button>
+
+            <h2>YOUR CART</h2>
+
+            <div id="cartItems"></div>
+
+            <div class="cart-summary">
+
+                <p>
+                    Total items:
+                    <strong id="cartQuantity">0</strong>
+                </p>
+
+                <p>
+                    Subtotal:
+                    <strong id="cartSubtotal">R0</strong>
+                </p>
+
+            </div>
+
+            <div class="cart-buttons">
+
+                <button
+                    class="hero-button"
+                    id="continueShopping"
+                >
+                    CONTINUE SHOPPING
+                </button>
+
+                <button
+                    class="hero-button"
+                    id="cartCheckout"
+                >
+                    CHECKOUT
+                </button>
+
+            </div>
+
+        </div>
+
+    `;
+
+
+    document.body.appendChild(modal);
+
+
+    document.getElementById(
+        "cartClose"
+    ).onclick = function () {
+
+        modal.style.display =
+            "none";
+
+    };
+
+
+    document.getElementById(
+        "continueShopping"
+    ).onclick = function () {
+
+        modal.style.display =
+            "none";
+
+    };
+
+
+  document.getElementById(
+    "cartCheckout"
+).onclick = function () {
+
+    if (cart.length === 0) {
+
+        return;
+
+    }
+
+
+    // ======================================
+    // GET SAVED DELIVERY METHOD
+    // ======================================
+
+    const savedDelivery =
+        localStorage.getItem(
+            "veldVibeDelivery"
+        );
+
+
+    const delivery =
+        savedDelivery !== null
+            ? Number(savedDelivery)
+            : 100;
+
+
+    // ======================================
+    // CALCULATE ORDER
+    // ======================================
+
+    let subtotal = 0;
+
+    let totalQuantity = 0;
+
+
+    cart.forEach(cartProduct => {
+
+        Object.keys(
+            cartProduct.sizes
+        ).forEach(size => {
+
+            const item =
+                cartProduct.sizes[size];
+
+
+            subtotal +=
+                item.price *
+                item.quantity;
+
+
+            totalQuantity +=
+                item.quantity;
 
         });
 
     });
-// ======================================
-// CONTINUE TO CHECKOUT
-// ======================================
 
-document.getElementById("continueCheckout").onclick = function(){
 
-    const delivery = document.querySelector(
-        'input[name="delivery"]:checked'
-    ).value;
+    // ======================================
+    // CREATE ORDER
+    // ======================================
 
-const order = {
+    const order = {
 
-    product: selectedProduct,
-    size: selectedSize,
-    quantity: selectedQuantity,
-    delivery: delivery,
-    total: (selectedPrice * selectedQuantity) + Number(delivery)
+        cart: cart,
 
-};
+        delivery:
+            String(delivery),
+
+        subtotal:
+            subtotal,
+
+        quantity:
+            totalQuantity,
+
+        total:
+            subtotal + delivery
+
+    };
+
 
     localStorage.setItem(
-    "veldVibeOrder",
-    JSON.stringify(order)
-);
+        "veldVibeOrder",
+        JSON.stringify(order)
+    );
 
-window.location.href = "checkout.html";
+
+    // ======================================
+    // GO TO CHECKOUT
+    // ======================================
+
+    window.location.href =
+        "checkout.html";
 
 };
 
-function orderProduct(product){
 
-    let message = "";
+    modal.addEventListener(
+        "click",
+        function (event) {
 
-    if(product==="General Enquiry"){
+            if (event.target === modal) {
 
-        message="Hi Veld Vibe, I'd like to browse your products and place an order.";
+                modal.style.display =
+                    "none";
 
-    }else{
+            }
 
-        message=`Hi Veld Vibe, I'm interested in the ${product}.`;
+        }
+    );
+
+}
+
+
+// ======================================
+// RENDER CART
+// ======================================
+
+function renderCart() {
+
+    const cartItems =
+        document.getElementById("cartItems");
+
+
+    if (!cartItems) {
+        return;
+    }
+
+
+    cartItems.innerHTML = "";
+
+
+    let totalQuantity = 0;
+
+    let subtotal = 0;
+
+
+    if (cart.length === 0) {
+
+        cartItems.innerHTML = `
+            <p class="empty-cart">
+                Your cart is empty.
+            </p>
+        `;
 
     }
 
-    const url=`https://wa.me/${whatsappNumber}?text=${encodeURIComponent(message)}`;
 
-    window.open(url,"_blank");
+    cart.forEach(
+        (cartProduct, productIndex) => {
 
-}// ======================================
+            const product =
+                products[cartProduct.product];
+
+
+            const productBox =
+                document.createElement("div");
+
+            productBox.className =
+                "cart-product";
+
+
+            let productHTML = `
+
+                <h3>
+                    ${product.title}
+                </h3>
+
+            `;
+
+
+            Object.keys(cartProduct.sizes)
+                .forEach(size => {
+
+                    const item =
+                        cartProduct.sizes[size];
+
+
+                    totalQuantity +=
+                        item.quantity;
+
+
+                    subtotal +=
+                        item.price *
+                        item.quantity;
+
+
+                    productHTML += `
+
+                        <div class="cart-size-row">
+
+                            <span>
+                                Size ${size}
+                            </span>
+
+                            <button
+                                class="cart-minus"
+                                data-product="${productIndex}"
+                                data-size="${size}"
+                            >
+                                −
+                            </button>
+
+                            <strong>
+                                ${item.quantity}
+                            </strong>
+
+                            <button
+                                class="cart-plus"
+                                data-product="${productIndex}"
+                                data-size="${size}"
+                            >
+                                +
+                            </button>
+
+                            <span>
+                                R${item.price * item.quantity}
+                            </span>
+
+                            <button
+                                class="cart-remove-size"
+                                data-product="${productIndex}"
+                                data-size="${size}"
+                            >
+                                Remove
+                            </button>
+
+                        </div>
+
+                    `;
+
+                });
+
+
+            productBox.innerHTML =
+                productHTML;
+
+
+            cartItems.appendChild(
+                productBox
+            );
+
+        }
+    );
+
+
+    document.getElementById(
+        "cartQuantity"
+    ).innerHTML =
+        totalQuantity;
+
+
+    document.getElementById(
+        "cartSubtotal"
+    ).innerHTML =
+        "R" + subtotal;
+
+
+    document.querySelectorAll(
+        ".cart-minus"
+    ).forEach(button => {
+
+        button.onclick = function () {
+
+            const productIndex =
+                Number(
+                    this.dataset.product
+                );
+
+            const size =
+                this.dataset.size;
+
+
+            cart[productIndex]
+                .sizes[size]
+                .quantity--;
+
+
+            if (
+                cart[productIndex]
+                    .sizes[size]
+                    .quantity <= 0
+            ) {
+
+                delete cart[productIndex]
+                    .sizes[size];
+
+            }
+
+
+            removeEmptyProducts();
+
+            saveCart();
+
+            renderCart();
+
+        };
+
+    });
+
+
+    document.querySelectorAll(
+        ".cart-plus"
+    ).forEach(button => {
+
+        button.onclick = function () {
+
+            const productIndex =
+                Number(
+                    this.dataset.product
+                );
+
+            const size =
+                this.dataset.size;
+
+
+            cart[productIndex]
+                .sizes[size]
+                .quantity++;
+
+
+            saveCart();
+
+            renderCart();
+
+        };
+
+    });
+
+
+    document.querySelectorAll(
+        ".cart-remove-size"
+    ).forEach(button => {
+
+        button.onclick = function () {
+
+            const productIndex =
+                Number(
+                    this.dataset.product
+                );
+
+            const size =
+                this.dataset.size;
+
+
+            delete cart[productIndex]
+                .sizes[size];
+
+
+            removeEmptyProducts();
+
+            saveCart();
+
+            renderCart();
+
+        };
+
+    });
+
+}
+
+
+// ======================================
+// REMOVE EMPTY PRODUCTS
+// ======================================
+
+function removeEmptyProducts() {
+
+    cart =
+        cart.filter(
+            item =>
+                Object.keys(
+                    item.sizes
+                ).length > 0
+        );
+
+}
+
+
+// ======================================
+// CART BUTTON
+// ======================================
+
+function createCartButton() {
+
+    if (
+        document.getElementById(
+            "floatingCartButton"
+        )
+    ) {
+
+        return;
+
+    }
+
+
+    const button =
+        document.createElement("button");
+
+    button.id =
+        "floatingCartButton";
+
+    button.innerHTML =
+        "CART (0)";
+
+
+    document.body.appendChild(
+        button
+    );
+
+
+    button.onclick =
+        openCart;
+
+
+    updateCartButton();
+
+}
+
+
+// ======================================
+// UPDATE CART BUTTON
+// ======================================
+
+function updateCartButton() {
+
+    const button =
+        document.getElementById(
+            "floatingCartButton"
+        );
+
+
+    if (!button) {
+        return;
+    }
+
+
+    let quantity = 0;
+
+
+    cart.forEach(item => {
+
+        Object.values(
+            item.sizes
+        ).forEach(size => {
+
+            quantity +=
+                size.quantity;
+
+        });
+
+    });
+
+
+    button.innerHTML =
+        `CART (${quantity})`;
+
+}
+
+
+// ======================================
+// WHATSAPP
+// ======================================
+
+function orderProduct(product) {
+
+    let message = "";
+
+
+    if (
+        product === "General Enquiry"
+    ) {
+
+        message =
+            "Hi Veld Vibe, I'd like to browse your products and place an order.";
+
+    } else {
+
+        message =
+            `Hi Veld Vibe, I'm interested in the ${product}.`;
+
+    }
+
+
+    const url =
+        `https://wa.me/${whatsappNumber}?text=${encodeURIComponent(message)}`;
+
+
+    window.open(
+        url,
+        "_blank"
+    );
+
+}
+
+
+// ======================================
 // COLLECTION POPUP
 // ======================================
 
@@ -292,28 +1224,33 @@ const collectionModal =
 const closeCollection =
     document.querySelector(".close-collection");
 
-collectionButton.onclick = function(){
 
-    collectionModal.style.display = "flex";
+if (
+    collectionButton &&
+    collectionModal &&
+    closeCollection
+) {
 
-};
+    collectionButton.onclick = function () {
 
-closeCollection.onclick = function(){
+        collectionModal.style.display =
+            "flex";
 
-    collectionModal.style.display = "none";
+    };
 
-};
 
-window.addEventListener("click", function(event){
+    closeCollection.onclick = function () {
 
-    if(event.target === collectionModal){
+        collectionModal.style.display =
+            "none";
 
-        collectionModal.style.display = "none";
+    };
 
-    }
+}
 
-});// ======================================
-// VELD VIBE DEALS POPUP
+
+// ======================================
+// DEALS POPUP
 // ======================================
 
 const dealsButton =
@@ -325,31 +1262,31 @@ const dealsModal =
 const closeDeals =
     document.querySelector(".close-deals");
 
-if (dealsButton && dealsModal && closeDeals) {
 
-    dealsButton.onclick = function() {
+if (
+    dealsButton &&
+    dealsModal &&
+    closeDeals
+) {
 
-        dealsModal.style.display = "flex";
+    dealsButton.onclick = function () {
+
+        dealsModal.style.display =
+            "flex";
 
     };
 
-    closeDeals.onclick = function() {
 
-        dealsModal.style.display = "none";
+    closeDeals.onclick = function () {
+
+        dealsModal.style.display =
+            "none";
 
     };
-
-    window.addEventListener("click", function(event) {
-
-        if (event.target === dealsModal) {
-
-            dealsModal.style.display = "none";
-
-        }
-
-    });
 
 }
+
+
 // ======================================
 // RETURNS POPUP
 // ======================================
@@ -363,87 +1300,123 @@ const returnsModal =
 const closeReturns =
     document.querySelector(".close-returns");
 
-if (returnsButton && returnsModal && closeReturns) {
 
-    returnsButton.onclick = function(){
+if (
+    returnsButton &&
+    returnsModal &&
+    closeReturns
+) {
 
-        returnsModal.style.display = "flex";
+    returnsButton.onclick = function () {
+
+        returnsModal.style.display =
+            "flex";
 
     };
 
-    closeReturns.onclick = function(){
 
-        returnsModal.style.display = "none";
+    closeReturns.onclick = function () {
+
+        returnsModal.style.display =
+            "none";
 
     };
-
-    window.addEventListener("click", function(event){
-
-        if(event.target === returnsModal){
-
-            returnsModal.style.display = "none";
-
-        }
-
-    });
 
 }
-const sizeGuideImage = document.getElementById('sizeGuideImage');
-const sizeGuideModal = document.getElementById('sizeGuideModal');
-const sizeGuideModalImage = document.getElementById('sizeGuideModalImage');
-const closeModal = document.querySelector('.close-size-guide');
+
+
+// ======================================
+// SIZE GUIDE
+// ======================================
+
+const sizeGuideImage =
+    document.getElementById("sizeGuideImage");
+
+const sizeGuideModal =
+    document.getElementById("sizeGuideModal");
+
+const sizeGuideModalImage =
+    document.getElementById("sizeGuideModalImage");
+
+const closeSizeGuide =
+    document.querySelector(".close-size-guide");
 
 
 if (
     sizeGuideImage &&
     sizeGuideModal &&
     sizeGuideModalImage &&
-    closeModal
+    closeSizeGuide
 ) {
 
- sizeGuideImage.addEventListener('click', () => {
+    sizeGuideImage.addEventListener(
+        "click",
+        () => {
 
-   
-    sizeGuideModalImage.src = sizeGuideImage.src;
-    sizeGuideModal.style.display = 'flex';
+            sizeGuideModalImage.src =
+                sizeGuideImage.src;
 
-});
+            sizeGuideModal.style.display =
+                "flex";
 
-    closeModal.addEventListener('click', () => {
-        sizeGuideModal.style.display = 'none';
-    });
-
-    sizeGuideModal.addEventListener('click', (e) => {
-        if (e.target === sizeGuideModal) {
-            sizeGuideModal.style.display = 'none';
         }
-    });
+    );
+
+
+    closeSizeGuide.addEventListener(
+        "click",
+        () => {
+
+            sizeGuideModal.style.display =
+                "none";
+
+        }
+    );
+
+
+    sizeGuideModal.addEventListener(
+        "click",
+        event => {
+
+            if (
+                event.target ===
+                sizeGuideModal
+            ) {
+
+                sizeGuideModal.style.display =
+                    "none";
+
+            }
+
+        }
+    );
 
 }
-document.getElementById("plusQty").addEventListener("click", function () {
 
-    if (selectedQuantity < 10) {
 
-        selectedQuantity++;
+// ======================================
+// INITIALISE CART
+// ======================================
 
-        document.getElementById("quantityValue").innerHTML = selectedQuantity;
+createCartButton();
 
-        updateTotal();
+updateCartButton();
 
-    }
 
-});
+// ======================================
+// REOPEN CART AFTER EDITING
+// ======================================
 
-document.getElementById("minusQty").addEventListener("click", function () {
+if (
+    localStorage.getItem(
+        "veldVibeOpenCart"
+    ) === "true"
+) {
 
-    if (selectedQuantity > 1) {
+    localStorage.removeItem(
+        "veldVibeOpenCart"
+    );
 
-        selectedQuantity--;
+    openCart();
 
-        document.getElementById("quantityValue").innerHTML = selectedQuantity;
-
-        updateTotal();
-
-    }
-
-});
+}

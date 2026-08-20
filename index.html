@@ -409,74 +409,111 @@
     <!-- =====================================================
      BUY NOW MODAL
 ===================================================== -->
+<!-- =====================================================
+     BUY NOW MODAL
+===================================================== -->
 
-    <div id="buyModal" class="buy-modal">
+<div id="buyModal" class="buy-modal">
 
-        <div class="buy-modal-content">
+    <div class="buy-modal-content">
 
-            <span class="close-modal">&times;</span>
+        <span class="close-modal">&times;</span>
 
-            <h2 id="modalTitle">BUY YOUR PARKA</h2>
-       
+        <h2 id="modalTitle">BUY YOUR PARKA</h2>
 
-            <div class="modal-product-image">
 
-                <img id="modalImage" src="" alt="Product">
+        <div class="modal-product-image">
 
-            </div>
+            <img
+                id="modalImage"
+                src=""
+                alt="Product"
+            >
 
-            <div class="modal-group">
+        </div>
 
-                <label>Select Size</label>
 
-                <div id="sizeOptions"></div>
+        <!-- =================================================
+             SIZE SELECTION
+        ================================================== -->
 
-            </div>
-<div class="modal-group">
+        <div class="modal-group">
 
-    <label>Quantity</label>
+            <label>Select Size</label>
 
-    <div class="quantity-controls">
+            <div id="sizeOptions"></div>
 
-        <button type="button" id="minusQty">−</button>
+        </div>
 
-        <span id="quantityValue">1</span>
 
-        <button type="button" id="plusQty">+</button>
+        <!-- =================================================
+             DELIVERY METHOD
+        ================================================== -->
+
+        <div class="modal-group">
+
+            <label>Delivery Method</label>
+
+            <label class="radio-option">
+
+                <input
+                    type="radio"
+                    name="delivery"
+                    value="100"
+                    checked
+                >
+
+                Courier (+R100)
+
+            </label>
+
+
+            <label class="radio-option">
+
+                <input
+                    type="radio"
+                    name="delivery"
+                    value="0"
+                >
+
+                Collection - Alberton
+
+            </label>
+
+        </div>
+
+
+        <!-- =================================================
+             TOTAL
+        ================================================== -->
+
+        <div class="order-total">
+
+            Total
+
+            <span id="orderTotal">
+                R0
+            </span>
+
+        </div>
+
+
+        <!-- =================================================
+             ADD TO CART
+        ================================================== -->
+
+        <button
+            type="button"
+            id="continueCheckout"
+            class="hero-button"
+        >
+            ADD TO CART
+        </button>
+
 
     </div>
 
 </div>
-            <div class="modal-group">
-
-                <label>Delivery Method</label>
-
-                <label class="radio-option">
-                    <input type="radio" name="delivery" value="100" checked>
-
-                    Courier (+R100)
-                </label>
-
-                <label class="radio-option">
-                    <input type="radio" name="delivery" value="0">
-
-                    Collection - Alberton
-                </label>
-
-            </div>
-
-
-<div class="order-total">
-
-    Total
-
-    <span id="orderTotal">
-        R0
-    </span>
-
-</div>
-
-            <button id="continueCheckout" class="hero-button">
 
                 ADD TO CART
 
