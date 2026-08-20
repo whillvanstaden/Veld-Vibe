@@ -12,81 +12,79 @@ app.use(express.json());
 const PORT = process.env.PORT || 3000;
 
 
-// ================================
-// PAYFAST CONFIGURATION
-// ================================
+// ========================================
+// PAYFAST SIGNATURE
+// ========================================
 
-const PAYFAST_MERCHANT_ID =
-    process.env.PAYFAST_MERCHANT_ID;
+function generateSignature(data, passphrase = "") {
 
-const PAYFAST_MERCHANT_KEY =
-    process.env.PAYFAST_MERCHANT_KEY;
+    const parameterString = Object.entries(data)
 
-const PAYFAST_PASSPHRASE =
-    process.env.PAYFAST_PASSPHRASE;
+        // Remove empty values
+        .filter(([key, value]) =>
+            value !== "" &&
+            value !== null &&
+            value !== undefined
+        )
 
-const PAYFAST_URL =
-    process.env.PAYFAST_URL;
+        // Build PayFast parameter string
+        .map(([key, value]) => {
 
-const PAYFAST_RETURN_URL =
-    process.env.PAYFAST_RETURN_URL;
+            return (
+                key +
+                "=" +
+                encodeURIComponent(
+                    String(value).trim()
+                ).replace(/%20/g, "+")
+            );
 
-const PAYFAST_CANCEL_URL =
-    process.env.PAYFAST_CANCEL_URL;
+        })
 
-const PAYFAST_NOTIFY_URL =
-    process.env.PAYFAST_NOTIFY_URL;
-
-
-// ================================
-// CREATE PAYFAST SIGNATURE
-// ================================
-
-function generateSignature(data, passphrase) {
-
-    let parameterString = "";
-
-    for (const key in data) {
-
-        if (
-            Object.prototype.hasOwnProperty.call(data, key) &&
-            data[key] !== ""
-        ) {
-
-            parameterString +=
-                `${key}=${encodeURIComponent(
-                    String(data[key]).trim()
-                ).replace(/%20/g, "+")}&`;
-
-        }
-
-    }
-
-    parameterString =
-        parameterString.slice(0, -1);
+        .join("&");
 
 
-    if (passphrase) {
+    let finalString = parameterString;
 
-        parameterString +=
-            `&passphrase=${encodeURIComponent(
+
+    // Only add passphrase if one exists
+    if (passphrase && passphrase.trim() !== "") {
+
+        finalString +=
+            "&passphrase=" +
+            encodeURIComponent(
                 passphrase.trim()
-            ).replace(/%20/g, "+")}`;
+            ).replace(/%20/g, "+");
 
     }
 
 
-    return crypto
+    // DEBUG
+    console.log(
+        "\nPAYFAST STRING:\n",
+        finalString
+    );
+
+
+    const signature = crypto
         .createHash("md5")
-        .update(parameterString)
+        .update(finalString)
         .digest("hex");
+
+
+    console.log(
+        "\nPAYFAST SIGNATURE:\n",
+        signature
+    );
+
+
+    return signature;
 
 }
 
 
-// ================================
+// ========================================
 // CREATE PAYMENT
-// ================================
+// ========================================
 
 app.post("/create-payment", (req, res) => {
 
@@ -103,26 +101,24 @@ app.post("/create-payment", (req, res) => {
 
 
         // IMPORTANT:
-        // The order of these fields matters for PayFast
-        // signature generation.
+        // Keep this exact PayFast field order.
 
         const paymentData = {
 
             // Merchant details
             merchant_id:
-                PAYFAST_MERCHANT_ID,
+                process.env.PAYFAST_MERCHANT_ID,
 
             merchant_key:
-                PAYFAST_MERCHANT_KEY,
+                process.env.PAYFAST_MERCHANT_KEY,
 
+
+            // Transaction URLs
             return_url:
-                PAYFAST_RETURN_URL,
+                process.env.PAYFAST_RETURN_URL,
 
             cancel_url:
-                PAYFAST_CANCEL_URL,
-
-            notify_url:
-                PAYFAST_NOTIFY_URL || "",
+                process.env.PAYFAST_CANCEL_URL,
 
 
             // Customer details
@@ -152,15 +148,26 @@ app.post("/create-payment", (req, res) => {
         };
 
 
+        // Generate signature
         const signature =
             generateSignature(
                 paymentData,
-                PAYFAST_PASSPHRASE
+                process.env.PAYFAST_PASSPHRASE
             );
 
 
+        // Add signature AFTER generation
         paymentData.signature =
             signature;
+
+
+        console.log(
+            "\nPAYFAST DATA:"
+        );
+
+        console.log(
+            paymentData
+        );
 
 
         res.json({
@@ -168,7 +175,7 @@ app.post("/create-payment", (req, res) => {
             success: true,
 
             paymentUrl:
-                PAYFAST_URL,
+                process.env.PAYFAST_URL,
 
             paymentData:
                 paymentData
@@ -180,9 +187,10 @@ app.post("/create-payment", (req, res) => {
     catch (error) {
 
         console.error(
-            "PAYFAST ERROR:",
+            "\nPAYFAST ERROR:",
             error
         );
+
 
         res.status(500).json({
 
@@ -198,9 +206,9 @@ app.post("/create-payment", (req, res) => {
 });
 
 
-// ================================
+// ========================================
 // TEST SERVER
-// ================================
+// ========================================
 
 app.get("/", (req, res) => {
 
@@ -211,9 +219,9 @@ app.get("/", (req, res) => {
 });
 
 
-// ================================
+// ========================================
 // START SERVER
-// ================================
+// ========================================
 
 app.listen(PORT, () => {
 
