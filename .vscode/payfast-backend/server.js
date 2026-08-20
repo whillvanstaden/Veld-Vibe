@@ -1,74 +1,100 @@
-require("dotenv").config();
-
 const express = require("express");
 const cors = require("cors");
 const crypto = require("crypto");
+require("dotenv").config();
 
 const app = express();
 
 app.use(cors());
+
 app.use(express.json());
 
-const PORT = process.env.PORT || 3000;
 
-
-// ========================================
+// ======================================
 // PAYFAST SIGNATURE
-// ========================================
+// ======================================
 
-function generateSignature(data, passphrase = "") {
+function generateSignature(data, passphrase = null) {
 
-    const parameterString = Object.entries(data)
+    const pairs = [];
 
-        // Remove empty values
-        .filter(([key, value]) =>
-            value !== "" &&
+
+    Object.keys(data).forEach((key) => {
+
+        const value = data[key];
+
+
+        // PayFast requires blank values
+        // to be excluded from the signature
+        if (
+            value !== undefined &&
             value !== null &&
-            value !== undefined
-        )
+            value !== ""
+        ) {
 
-        // Build PayFast parameter string
-        .map(([key, value]) => {
-
-            return (
-                key +
-                "=" +
+            let encodedValue =
                 encodeURIComponent(
                     String(value).trim()
-                ).replace(/%20/g, "+")
+                );
+
+
+            // PayFast requires spaces as +
+            encodedValue =
+                encodedValue.replace(
+                    /%20/g,
+                    "+"
+                );
+
+
+            pairs.push(
+                `${key}=${encodedValue}`
             );
 
-        })
+        }
 
-        .join("&");
-
-
-    let finalString = parameterString;
+    });
 
 
-    // Only add passphrase if one exists
-    if (passphrase && passphrase.trim() !== "") {
+    if (
+        passphrase &&
+        passphrase.trim() !== ""
+    ) {
 
-        finalString +=
-            "&passphrase=" +
+        let encodedPassphrase =
             encodeURIComponent(
                 passphrase.trim()
-            ).replace(/%20/g, "+");
+            );
+
+
+        encodedPassphrase =
+            encodedPassphrase.replace(
+                /%20/g,
+                "+"
+            );
+
+
+        pairs.push(
+            `passphrase=${encodedPassphrase}`
+        );
 
     }
 
 
-    // DEBUG
+    const parameterString =
+        pairs.join("&");
+
+
     console.log(
-        "\nPAYFAST STRING:\n",
-        finalString
+        "\nPAYFAST PARAMETER STRING:\n",
+        parameterString
     );
 
 
-    const signature = crypto
-        .createHash("md5")
-        .update(finalString)
-        .digest("hex");
+    const signature =
+        crypto
+            .createHash("md5")
+            .update(parameterString)
+            .digest("hex");
 
 
     console.log(
@@ -82,151 +108,194 @@ function generateSignature(data, passphrase = "") {
 }
 
 
-// ========================================
+// ======================================
 // CREATE PAYMENT
-// ========================================
+// ======================================
 
-app.post("/create-payment", (req, res) => {
+app.post(
+    "/create-payment",
 
-    try {
+    (req, res) => {
 
-        const {
-            firstName,
-            surname,
-            email,
-            phoneNumber,
-            amount,
-            itemName
-        } = req.body;
+        try {
 
+            const {
 
-        // IMPORTANT:
-        // Keep this exact PayFast field order.
+                firstName,
+                surname,
+                email,
+                phoneNumber,
+                amount,
+                itemName
 
-        const paymentData = {
-
-            // Merchant details
-            merchant_id:
-                process.env.PAYFAST_MERCHANT_ID,
-
-            merchant_key:
-                process.env.PAYFAST_MERCHANT_KEY,
+            } = req.body;
 
 
-            // Transaction URLs
-            return_url:
-                process.env.PAYFAST_RETURN_URL,
+            const paymentData = {
 
-            cancel_url:
-                process.env.PAYFAST_CANCEL_URL,
+                // ------------------
+                // MERCHANT DETAILS
+                // ------------------
 
+                merchant_id:
+                    process.env
+                        .PAYFAST_MERCHANT_ID,
 
-            // Customer details
-            name_first:
-                firstName || "",
-
-            name_last:
-                surname || "",
-
-            email_address:
-                email || "",
-
-            cell_number:
-                phoneNumber || "",
+                merchant_key:
+                    process.env
+                        .PAYFAST_MERCHANT_KEY,
 
 
-            // Transaction details
-            m_payment_id:
-                `VELDVIBE-${Date.now()}`,
+                // ------------------
+                // RETURN URLS
+                // ------------------
 
-            amount:
-                Number(amount).toFixed(2),
+                return_url:
+                    process.env
+                        .PAYFAST_RETURN_URL,
 
-            item_name:
-                itemName || "Veld Vibe Order"
+                cancel_url:
+                    process.env
+                        .PAYFAST_CANCEL_URL,
 
-        };
+
+                // ------------------
+                // CUSTOMER DETAILS
+                // ------------------
+
+                name_first:
+                    firstName || "",
+
+                name_last:
+                    surname || "",
+
+                email_address:
+                    email || "",
+
+                cell_number:
+                    phoneNumber || "",
 
 
-        // Generate signature
-        const signature =
-            generateSignature(
-                paymentData,
-                process.env.PAYFAST_PASSPHRASE
+                // ------------------
+                // PAYMENT DETAILS
+                // ------------------
+
+                m_payment_id:
+                    `VELDVIBE-${Date.now()}`,
+
+                amount:
+                    Number(amount)
+                        .toFixed(2),
+
+                item_name:
+                    itemName
+
+            };
+
+
+            // Add notify URL only
+            // if one exists
+
+            if (
+                process.env
+                    .PAYFAST_NOTIFY_URL &&
+                process.env
+                    .PAYFAST_NOTIFY_URL.trim() !== ""
+            ) {
+
+                paymentData.notify_url =
+                    process.env
+                        .PAYFAST_NOTIFY_URL;
+
+            }
+
+
+            // ------------------
+            // GENERATE SIGNATURE
+            // ------------------
+
+            const signature =
+                generateSignature(
+
+                    paymentData,
+
+                    process.env
+                        .PAYFAST_PASSPHRASE
+
+                );
+
+
+            paymentData.signature =
+                signature;
+
+
+            console.log(
+                "\nPAYFAST DATA:\n",
+                paymentData
             );
 
 
-        // Add signature AFTER generation
-        paymentData.signature =
-            signature;
+            res.json({
+
+                success:
+                    true,
+
+                paymentUrl:
+                    process.env
+                        .PAYFAST_URL,
+
+                paymentData:
+                    paymentData
+
+            });
+
+        }
+
+        catch (error) {
+
+            console.error(
+                "PAYFAST ERROR:",
+                error
+            );
 
 
-        console.log(
-            "\nPAYFAST DATA:"
-        );
+            res.status(500).json({
 
-        console.log(
-            paymentData
-        );
+                success:
+                    false,
 
+                message:
+                    "Unable to create payment."
 
-        res.json({
+            });
 
-            success: true,
-
-            paymentUrl:
-                process.env.PAYFAST_URL,
-
-            paymentData:
-                paymentData
-
-        });
-
-    }
-
-    catch (error) {
-
-        console.error(
-            "\nPAYFAST ERROR:",
-            error
-        );
-
-
-        res.status(500).json({
-
-            success: false,
-
-            message:
-                "Unable to create PayFast payment."
-
-        });
+        }
 
     }
 
-});
+);
 
 
-// ========================================
-// TEST SERVER
-// ========================================
-
-app.get("/", (req, res) => {
-
-    res.send(
-        "Veld Vibe PayFast backend is running."
-    );
-
-});
-
-
-// ========================================
+// ======================================
 // START SERVER
-// ========================================
+// ======================================
 
-app.listen(PORT, () => {
+const PORT =
+    process.env.PORT || 3000;
 
-    console.log(
-        `Veld Vibe PayFast backend running on port ${PORT}`
-    );
 
-});
+app.listen(
+
+    PORT,
+
+    () => {
+
+        console.log(
+
+            `Veld Vibe PayFast backend running on port ${PORT}`
+
+        );
+
+    }
+
+);
