@@ -1,3 +1,5 @@
+require("dotenv").config();
+
 const express = require("express");
 const cors = require("cors");
 const crypto = require("crypto");
@@ -6,42 +8,45 @@ const app = express();
 
 app.use(cors());
 app.use(express.json());
-app.use(express.urlencoded({ extended: false }));
 
-const PORT = 3000;
+const PORT = process.env.PORT || 3000;
 
 
-// ========================================
-// PAYFAST SANDBOX CONFIGURATION
-// ========================================
+// ================================
+// PAYFAST CONFIGURATION
+// ================================
 
-const PAYFAST_MERCHANT_ID = "10000100";
+const PAYFAST_MERCHANT_ID =
+    process.env.PAYFAST_MERCHANT_ID;
 
-const PAYFAST_MERCHANT_KEY = "46f0cd694581a";
+const PAYFAST_MERCHANT_KEY =
+    process.env.PAYFAST_MERCHANT_KEY;
 
-const PAYFAST_PASSPHRASE = "jt7NOE43FZPn";
-
+const PAYFAST_PASSPHRASE =
+    process.env.PAYFAST_PASSPHRASE || "";
 
 const PAYFAST_URL =
-    "https://sandbox.payfast.co.za/eng/process";
+    process.env.PAYFAST_URL;
+
+const PAYFAST_RETURN_URL =
+    process.env.PAYFAST_RETURN_URL;
+
+const PAYFAST_CANCEL_URL =
+    process.env.PAYFAST_CANCEL_URL;
 
 
-// ========================================
+// ================================
 // CREATE PAYFAST SIGNATURE
-// ========================================
+// ================================
 
 function generateSignature(data, passphrase = "") {
 
     let parameterString = "";
 
-
     for (const key in data) {
 
         if (
-            Object.prototype.hasOwnProperty.call(
-                data,
-                key
-            ) &&
+            Object.prototype.hasOwnProperty.call(data, key) &&
             data[key] !== ""
         ) {
 
@@ -54,10 +59,8 @@ function generateSignature(data, passphrase = "") {
 
     }
 
-
     parameterString =
         parameterString.slice(0, -1);
-
 
     if (passphrase) {
 
@@ -68,7 +71,6 @@ function generateSignature(data, passphrase = "") {
 
     }
 
-
     return crypto
         .createHash("md5")
         .update(parameterString)
@@ -77,9 +79,9 @@ function generateSignature(data, passphrase = "") {
 }
 
 
-// ========================================
+// ================================
 // CREATE PAYMENT
-// ========================================
+// ================================
 
 app.post("/create-payment", (req, res) => {
 
@@ -95,18 +97,7 @@ app.post("/create-payment", (req, res) => {
         } = req.body;
 
 
-        // -------------------------------
-        // VALIDATE PAYMENT AMOUNT
-        // -------------------------------
-
-        const paymentAmount =
-            Number(amount);
-
-
-        if (
-            !Number.isFinite(paymentAmount) ||
-            paymentAmount < 5
-        ) {
+        if (!amount || Number(amount) <= 0) {
 
             return res.status(400).json({
 
@@ -120,14 +111,7 @@ app.post("/create-payment", (req, res) => {
         }
 
 
-        // -------------------------------
-        // CREATE PAYMENT DATA
-        // -------------------------------
-
         const paymentData = {
-
-
-            // MERCHANT DETAILS
 
             merchant_id:
                 PAYFAST_MERCHANT_ID,
@@ -135,17 +119,11 @@ app.post("/create-payment", (req, res) => {
             merchant_key:
                 PAYFAST_MERCHANT_KEY,
 
-
-            // RETURN URLS
-
             return_url:
-                "https://veldvibesa.co.za/payment-success.html",
+                PAYFAST_RETURN_URL,
 
             cancel_url:
-                "https://veldvibesa.co.za/payment-cancelled.html",
-
-
-            // CUSTOMER DETAILS
+                PAYFAST_CANCEL_URL,
 
             name_first:
                 firstName || "",
@@ -159,36 +137,27 @@ app.post("/create-payment", (req, res) => {
             cell_number:
                 phoneNumber || "",
 
-
-            // PAYMENT DETAILS
-
             m_payment_id:
                 `VELDVIBE-${Date.now()}`,
 
             amount:
-                paymentAmount.toFixed(2),
+                Number(amount).toFixed(2),
 
             item_name:
-                itemName ||
-                "Veld Vibe Order"
+                itemName || "Veld Vibe Order"
 
         };
 
 
-        // -------------------------------
-        // CREATE SIGNATURE
-        // -------------------------------
-
-        paymentData.signature =
+        const signature =
             generateSignature(
                 paymentData,
                 PAYFAST_PASSPHRASE
             );
 
+        paymentData.signature =
+            signature;
 
-        // -------------------------------
-        // SEND DATA BACK TO WEBSITE
-        // -------------------------------
 
         res.json({
 
@@ -202,16 +171,11 @@ app.post("/create-payment", (req, res) => {
 
         });
 
-
     }
 
     catch (error) {
 
-        console.error(
-            "Payment creation error:",
-            error
-        );
-
+        console.error(error);
 
         res.status(500).json({
 
@@ -227,9 +191,9 @@ app.post("/create-payment", (req, res) => {
 });
 
 
-// ========================================
+// ================================
 // TEST SERVER
-// ========================================
+// ================================
 
 app.get("/", (req, res) => {
 
@@ -240,9 +204,9 @@ app.get("/", (req, res) => {
 });
 
 
-// ========================================
+// ================================
 // START SERVER
-// ========================================
+// ================================
 
 app.listen(PORT, () => {
 
