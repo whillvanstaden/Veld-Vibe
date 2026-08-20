@@ -670,6 +670,68 @@ if (backToCart) {
 
 
 // ======================================
+// CREATE PAYFAST FORM
+// ======================================
+
+function submitPayFastPayment(
+    paymentUrl,
+    paymentData
+) {
+
+    const form =
+        document.createElement(
+            "form"
+        );
+
+
+    form.method =
+        "POST";
+
+
+    form.action =
+        paymentUrl;
+
+
+    Object.keys(
+        paymentData
+    ).forEach(key => {
+
+        const input =
+            document.createElement(
+                "input"
+            );
+
+
+        input.type =
+            "hidden";
+
+
+        input.name =
+            key;
+
+
+        input.value =
+            paymentData[key];
+
+
+        form.appendChild(
+            input
+        );
+
+    });
+
+
+    document.body.appendChild(
+        form
+    );
+
+
+    form.submit();
+
+}
+
+
+// ======================================
 // CHECKOUT BUTTON
 // ======================================
 
@@ -682,7 +744,7 @@ const checkoutButton =
 if (checkoutButton) {
 
     checkoutButton.onclick =
-        function () {
+        async function () {
 
             if (
                 cart.length === 0
@@ -697,7 +759,89 @@ if (checkoutButton) {
             }
 
 
-            // COURIER
+            // ============================
+            // GET CUSTOMER DETAILS
+            // ============================
+
+            const firstName =
+                document.getElementById(
+                    "firstName"
+                );
+
+
+            const surname =
+                document.getElementById(
+                    "surname"
+                );
+
+
+            const phoneNumber =
+                document.getElementById(
+                    "phoneNumber"
+                );
+
+
+            const email =
+                document.getElementById(
+                    "email"
+                );
+
+
+            // ============================
+            // VALIDATE CUSTOMER DETAILS
+            // ============================
+
+            if (
+                !firstName ||
+                firstName.value.trim() === ""
+            ) {
+
+                alert(
+                    "Please enter your first name."
+                );
+
+                firstName.focus();
+
+                return;
+
+            }
+
+
+            if (
+                !surname ||
+                surname.value.trim() === ""
+            ) {
+
+                alert(
+                    "Please enter your surname."
+                );
+
+                surname.focus();
+
+                return;
+
+            }
+
+
+            if (
+                !phoneNumber ||
+                phoneNumber.value.trim() === ""
+            ) {
+
+                alert(
+                    "Please enter your phone number."
+                );
+
+                phoneNumber.focus();
+
+                return;
+
+            }
+
+
+            // ============================
+            // COURIER PAYMENT
+            // ============================
 
             if (
                 deliveryCost === 100
@@ -710,7 +854,7 @@ if (checkoutButton) {
 
 
                 if (
-                    address &&
+                    !address ||
                     address.value.trim() === ""
                 ) {
 
@@ -725,16 +869,196 @@ if (checkoutButton) {
                 }
 
 
-                alert(
-                    "Courier payment will continue here."
-                );
+                // ------------------------
+                // CALCULATE TOTAL
+                // ------------------------
+
+                const totals =
+                    calculateCart();
+
+
+                // ------------------------
+                // CREATE ORDER NAME
+                // ------------------------
+
+                const itemName =
+                    `Veld Vibe Order - ${totals.quantity} item(s)`;
+
+
+                // ------------------------
+                // DISABLE BUTTON
+                // ------------------------
+
+                checkoutButton.disabled =
+                    true;
+
+
+                checkoutButton.innerHTML =
+                    "CONNECTING TO PAYFAST...";
+
+
+                try {
+
+                    // --------------------
+                    // SEND PAYMENT REQUEST
+                    // TO LOCAL BACKEND
+                    // --------------------
+
+                    const response =
+                        await fetch(
+                            "http://localhost:3000/create-payment",
+                            {
+
+                                method:
+                                    "POST",
+
+                                headers: {
+
+                                    "Content-Type":
+                                        "application/json"
+
+                                },
+
+                                body:
+                                    JSON.stringify({
+
+                                        firstName:
+                                            firstName.value.trim(),
+
+                                        surname:
+                                            surname.value.trim(),
+
+                                        email:
+                                            email
+                                                ? email.value.trim()
+                                                : "",
+
+                                        phoneNumber:
+                                            phoneNumber.value.trim(),
+
+                                        amount:
+                                            totals.total,
+
+                                        itemName:
+                                            itemName
+
+                                    })
+
+                            }
+                        );
+
+
+                    const result =
+                        await response.json();
+
+
+                    if (
+                        !response.ok ||
+                        !result.success
+                    ) {
+
+                        throw new Error(
+
+                            result.message ||
+                            "Unable to create payment."
+
+                        );
+
+                    }
+
+
+                    // --------------------
+                    // SAVE CUSTOMER ORDER
+                    // DETAILS LOCALLY
+                    // --------------------
+
+                    localStorage.setItem(
+
+                        "veldVibeCustomerOrder",
+
+                        JSON.stringify({
+
+                            firstName:
+                                firstName.value.trim(),
+
+                            surname:
+                                surname.value.trim(),
+
+                            phoneNumber:
+                                phoneNumber.value.trim(),
+
+                            email:
+                                email
+                                    ? email.value.trim()
+                                    : "",
+
+                            address:
+                                address.value.trim(),
+
+                            cart:
+                                cart,
+
+                            delivery:
+                                deliveryCost,
+
+                            total:
+                                totals.total
+
+                        })
+
+                    );
+
+
+                    // --------------------
+                    // SEND CUSTOMER
+                    // TO PAYFAST
+                    // --------------------
+
+                    submitPayFastPayment(
+
+                        result.paymentUrl,
+
+                        result.paymentData
+
+                    );
+
+
+                }
+
+                catch (error) {
+
+                    console.error(
+                        "PayFast error:",
+                        error
+                    );
+
+
+                    alert(
+
+                        "Unable to connect to the payment system. " +
+                        "Please make sure the PayFast backend is running."
+
+                    );
+
+
+                    checkoutButton.disabled =
+                        false;
+
+
+                    checkoutButton.innerHTML =
+                        "PAY SECURELY";
+
+                }
+
 
                 return;
 
             }
 
 
+            // ============================
             // COLLECTION
+            // ============================
 
             alert(
                 "Your collection request is ready to submit."
