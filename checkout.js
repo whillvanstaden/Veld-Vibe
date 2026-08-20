@@ -696,6 +696,22 @@ function submitPayFastPayment(
         paymentData
     ).forEach(key => {
 
+        // Do not send blank values.
+        // The submitted fields must match
+        // the fields used to create
+        // the PayFast signature.
+
+        if (
+            paymentData[key] === "" ||
+            paymentData[key] === null ||
+            paymentData[key] === undefined
+        ) {
+
+            return;
+
+        }
+
+
         const input =
             document.createElement(
                 "input"
@@ -729,8 +745,6 @@ function submitPayFastPayment(
     form.submit();
 
 }
-
-
 // ======================================
 // CHECKOUT BUTTON
 // ======================================
