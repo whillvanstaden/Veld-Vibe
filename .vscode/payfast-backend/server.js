@@ -1,6 +1,7 @@
 const express = require("express");
 const cors = require("cors");
 const crypto = require("crypto");
+
 require("dotenv").config();
 
 const app = express();
@@ -11,95 +12,254 @@ app.use(express.json());
 
 
 // ======================================
+// PAYFAST URL ENCODING
+// PHP urlencode() compatible
+// ======================================
+
+function payfastEncode(value) {
+
+    return encodeURIComponent(
+
+        String(value).trim()
+
+    )
+
+        // JavaScript encodeURIComponent()
+        // does not encode these characters.
+        // PayFast expects urlencode-style encoding.
+
+        .replace(
+
+            /[!'()*~]/g,
+
+            character =>
+
+                "%" +
+
+                character
+                    .charCodeAt(0)
+                    .toString(16)
+                    .toUpperCase()
+
+        )
+
+        // PayFast requires spaces as +
+
+        .replace(
+
+            /%20/g,
+
+            "+"
+
+        );
+
+}
+
+
+// ======================================
 // PAYFAST SIGNATURE
 // ======================================
 
-function generateSignature(data, passphrase = null) {
+function generateSignature(
+    data,
+    passphrase = ""
+) {
+
+    // Exact PayFast custom
+    // payment field order
+
+    const fieldOrder = [
+
+        "merchant_id",
+
+        "merchant_key",
+
+        "return_url",
+
+        "cancel_url",
+
+        "notify_url",
+
+        "notify_method",
+
+        "name_first",
+
+        "name_last",
+
+        "email_address",
+
+        "cell_number",
+
+        "m_payment_id",
+
+        "amount",
+
+        "item_name",
+
+        "item_description",
+
+        "custom_int1",
+
+        "custom_int2",
+
+        "custom_int3",
+
+        "custom_int4",
+
+        "custom_int5",
+
+        "custom_str1",
+
+        "custom_str2",
+
+        "custom_str3",
+
+        "custom_str4",
+
+        "custom_str5",
+
+        "email_confirmation",
+
+        "confirmation_address",
+
+        "currency",
+
+        "payment_method",
+
+        "subscription_type",
+
+        "billing_date",
+
+        "recurring_amount",
+
+        "frequency",
+
+        "cycles",
+
+        "subscription_notify_email",
+
+        "subscription_notify_webhook",
+
+        "subscription_notify_buyer"
+
+    ];
+
 
     const pairs = [];
 
 
-    Object.keys(data).forEach((key) => {
+    fieldOrder.forEach(
 
-        const value = data[key];
+        key => {
+
+            const value = data[key];
 
 
-        // PayFast requires blank values
-        // to be excluded from the signature
-        if (
-            value !== undefined &&
-            value !== null &&
-            value !== ""
-        ) {
+            // Only include
+            // non-blank fields
 
-            let encodedValue =
-                encodeURIComponent(
-                    String(value).trim()
+            if (
+
+                value !== undefined &&
+
+                value !== null &&
+
+                String(value).trim() !== ""
+
+            ) {
+
+                pairs.push(
+
+                    `${key}=${payfastEncode(value)}`
+
                 );
 
-
-            // PayFast requires spaces as +
-            encodedValue =
-                encodedValue.replace(
-                    /%20/g,
-                    "+"
-                );
-
-
-            pairs.push(
-                `${key}=${encodedValue}`
-            );
+            }
 
         }
 
-    });
+    );
 
+
+    // Add passphrase ONLY
+    // if one exists in PayFast
 
     if (
+
         passphrase &&
+
         passphrase.trim() !== ""
+
     ) {
 
-        let encodedPassphrase =
-            encodeURIComponent(
-                passphrase.trim()
-            );
-
-
-        encodedPassphrase =
-            encodedPassphrase.replace(
-                /%20/g,
-                "+"
-            );
-
-
         pairs.push(
-            `passphrase=${encodedPassphrase}`
+
+            `passphrase=${payfastEncode(passphrase)}`
+
         );
 
     }
 
 
     const parameterString =
+
         pairs.join("&");
 
 
     console.log(
-        "\nPAYFAST PARAMETER STRING:\n",
+
+        "\n======================================"
+
+    );
+
+
+    console.log(
+
+        "PAYFAST PARAMETER STRING:"
+
+    );
+
+
+    console.log(
+
         parameterString
+
+    );
+
+
+    console.log(
+
+        "======================================\n"
+
     );
 
 
     const signature =
+
         crypto
+
             .createHash("md5")
-            .update(parameterString)
+
+            .update(
+
+                parameterString
+
+            )
+
             .digest("hex");
 
 
     console.log(
-        "\nPAYFAST SIGNATURE:\n",
+
+        "PAYFAST SIGNATURE:"
+
+    );
+
+
+    console.log(
+
         signature
+
     );
 
 
@@ -113,6 +273,7 @@ function generateSignature(data, passphrase = null) {
 // ======================================
 
 app.post(
+
     "/create-payment",
 
     (req, res) => {
@@ -122,129 +283,154 @@ app.post(
             const {
 
                 firstName,
+
                 surname,
+
                 email,
+
                 phoneNumber,
+
                 amount,
+
                 itemName
 
             } = req.body;
 
 
+            // ==================================
+            // BUILD PAYFAST PAYMENT DATA
+            // ==================================
+
             const paymentData = {
 
-                // ------------------
+
                 // MERCHANT DETAILS
-                // ------------------
 
                 merchant_id:
+
                     process.env
                         .PAYFAST_MERCHANT_ID,
 
                 merchant_key:
+
                     process.env
                         .PAYFAST_MERCHANT_KEY,
 
 
-                // ------------------
                 // RETURN URLS
-                // ------------------
 
                 return_url:
+
                     process.env
                         .PAYFAST_RETURN_URL,
 
                 cancel_url:
+
                     process.env
                         .PAYFAST_CANCEL_URL,
 
 
-                // ------------------
+                // NOTIFY URL
+
+                notify_url:
+
+                    process.env
+                        .PAYFAST_NOTIFY_URL || "",
+
+
                 // CUSTOMER DETAILS
-                // ------------------
 
                 name_first:
+
                     firstName || "",
 
                 name_last:
+
                     surname || "",
 
                 email_address:
+
                     email || "",
 
                 cell_number:
+
                     phoneNumber || "",
 
 
-                // ------------------
                 // PAYMENT DETAILS
-                // ------------------
 
                 m_payment_id:
+
                     `VELDVIBE-${Date.now()}`,
 
+
                 amount:
+
                     Number(amount)
                         .toFixed(2),
 
+
                 item_name:
+
                     itemName
 
             };
 
 
-            // Add notify URL only
-            // if one exists
-
-            if (
-                process.env
-                    .PAYFAST_NOTIFY_URL &&
-                process.env
-                    .PAYFAST_NOTIFY_URL.trim() !== ""
-            ) {
-
-                paymentData.notify_url =
-                    process.env
-                        .PAYFAST_NOTIFY_URL;
-
-            }
-
-
-            // ------------------
+            // ==================================
             // GENERATE SIGNATURE
-            // ------------------
+            // ==================================
 
             const signature =
+
                 generateSignature(
 
                     paymentData,
 
                     process.env
-                        .PAYFAST_PASSPHRASE
+                        .PAYFAST_PASSPHRASE || ""
 
                 );
 
 
             paymentData.signature =
+
                 signature;
 
 
             console.log(
-                "\nPAYFAST DATA:\n",
-                paymentData
+
+                "\nPAYFAST DATA:"
+
             );
 
+
+            console.log(
+
+                paymentData
+
+            );
+
+
+            // ==================================
+            // SEND DATA TO CHECKOUT
+            // ==================================
 
             res.json({
 
                 success:
+
                     true,
 
+
                 paymentUrl:
+
                     process.env
                         .PAYFAST_URL,
 
+
                 paymentData:
+
                     paymentData
 
             });
@@ -254,17 +440,22 @@ app.post(
         catch (error) {
 
             console.error(
-                "PAYFAST ERROR:",
+
+                "\nPAYFAST ERROR:",
+
                 error
+
             );
 
 
             res.status(500).json({
 
                 success:
+
                     false,
 
                 message:
+
                     "Unable to create payment."
 
             });
@@ -281,6 +472,7 @@ app.post(
 // ======================================
 
 const PORT =
+
     process.env.PORT || 3000;
 
 
