@@ -23,7 +23,7 @@ const PAYFAST_MERCHANT_KEY =
     process.env.PAYFAST_MERCHANT_KEY;
 
 const PAYFAST_PASSPHRASE =
-    process.env.PAYFAST_PASSPHRASE || "";
+    process.env.PAYFAST_PASSPHRASE;
 
 const PAYFAST_URL =
     process.env.PAYFAST_URL;
@@ -34,12 +34,15 @@ const PAYFAST_RETURN_URL =
 const PAYFAST_CANCEL_URL =
     process.env.PAYFAST_CANCEL_URL;
 
+const PAYFAST_NOTIFY_URL =
+    process.env.PAYFAST_NOTIFY_URL;
+
 
 // ================================
 // CREATE PAYFAST SIGNATURE
 // ================================
 
-function generateSignature(data, passphrase = "") {
+function generateSignature(data, passphrase) {
 
     let parameterString = "";
 
@@ -62,6 +65,7 @@ function generateSignature(data, passphrase = "") {
     parameterString =
         parameterString.slice(0, -1);
 
+
     if (passphrase) {
 
         parameterString +=
@@ -70,6 +74,7 @@ function generateSignature(data, passphrase = "") {
             ).replace(/%20/g, "+")}`;
 
     }
+
 
     return crypto
         .createHash("md5")
@@ -97,22 +102,13 @@ app.post("/create-payment", (req, res) => {
         } = req.body;
 
 
-        if (!amount || Number(amount) <= 0) {
-
-            return res.status(400).json({
-
-                success: false,
-
-                message:
-                    "Invalid payment amount."
-
-            });
-
-        }
-
+        // IMPORTANT:
+        // The order of these fields matters for PayFast
+        // signature generation.
 
         const paymentData = {
 
+            // Merchant details
             merchant_id:
                 PAYFAST_MERCHANT_ID,
 
@@ -125,6 +121,11 @@ app.post("/create-payment", (req, res) => {
             cancel_url:
                 PAYFAST_CANCEL_URL,
 
+            notify_url:
+                PAYFAST_NOTIFY_URL || "",
+
+
+            // Customer details
             name_first:
                 firstName || "",
 
@@ -137,6 +138,8 @@ app.post("/create-payment", (req, res) => {
             cell_number:
                 phoneNumber || "",
 
+
+            // Transaction details
             m_payment_id:
                 `VELDVIBE-${Date.now()}`,
 
@@ -154,6 +157,7 @@ app.post("/create-payment", (req, res) => {
                 paymentData,
                 PAYFAST_PASSPHRASE
             );
+
 
         paymentData.signature =
             signature;
@@ -175,7 +179,10 @@ app.post("/create-payment", (req, res) => {
 
     catch (error) {
 
-        console.error(error);
+        console.error(
+            "PAYFAST ERROR:",
+            error
+        );
 
         res.status(500).json({
 
