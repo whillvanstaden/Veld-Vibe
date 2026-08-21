@@ -919,8 +919,8 @@ if (checkoutButton) {
                     // --------------------
 
                     const response =
-                        await fetch(
-                            "http://localhost:3000/create-payment",
+                       await fetch(
+    "https://veld-vibe.onrender.com/create-payment",
                             {
 
                                 method:
