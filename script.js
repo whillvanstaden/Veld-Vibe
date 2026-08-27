@@ -16,20 +16,20 @@ const products = {
         image:"images/Mens Parka Jackets Side.png",
 
         sizes:[
-            {name:"S",price:1680},
-            {name:"M",price:1680},
-            {name:"L",price:1680},
-            {name:"XL",price:1680},
-            {name:"2XL",price:1680},
-            {name:"3XL",price:1680},
-            {name:"4XL",price:1680},
-            {name:"5XL",price:1680},
+            {name:"S",price:1500},
+            {name:"M",price:1500},
+            {name:"L",price:1500},
+            {name:"XL",price:1500},
+            {name:"2XL",price:1500},
+            {name:"3XL",price:1500},
+            {name:"4XL",price:1500},
+            {name:"5XL",price:1500},
 
-            {name:"6XL",price:1950},
-            {name:"7XL",price:1950},
-            {name:"8XL",price:1950},
-            {name:"9XL",price:1950},
-            {name:"10XL",price:1950}
+            {name:"6XL",price:1700},
+            {name:"7XL",price:1700},
+            {name:"8XL",price:1700},
+            {name:"9XL",price:1700},
+            {name:"10XL",price:1700}
 
         ]
 
@@ -46,20 +46,20 @@ const products = {
             {name:"2XS",price:1480},
             {name:"XS",price:1480},
 
-            {name:"S",price:1680},
-            {name:"M",price:1680},
-            {name:"L",price:1680},
-            {name:"XL",price:1680},
-            {name:"2XL",price:1680},
-            {name:"3XL",price:1680},
-            {name:"4XL",price:1680},
-            {name:"5XL",price:1680},
+            {name:"S",price:1500},
+            {name:"M",price:1500},
+            {name:"L",price:1500},
+            {name:"XL",price:1500},
+            {name:"2XL",price:1500},
+            {name:"3XL",price:1500},
+            {name:"4XL",price:1500},
+            {name:"5XL",price:1500},
 
-            {name:"6XL",price:1950},
-            {name:"7XL",price:1950},
-            {name:"8XL",price:1950},
-            {name:"9XL",price:1950},
-            {name:"10XL",price:1950}
+            {name:"6XL",price:1700},
+            {name:"7XL",price:1700},
+            {name:"8XL",price:1700},
+            {name:"9XL",price:1700},
+            {name:"10XL",price:1700}
 
         ]
 
@@ -78,13 +78,13 @@ const products = {
             {name:"2XS",price:1400},
             {name:"XS",price:1400},
 
-            {name:"S",price:1680},
-            {name:"M",price:1680},
-            {name:"L",price:1680},
-            {name:"XL",price:1680},
-            {name:"2XL",price:1680},
-            {name:"3XL",price:1680},
-            {name:"4XL",price:1680}
+            {name:"S",price:1500},
+            {name:"M",price:1500},
+            {name:"L",price:1500},
+            {name:"XL",price:1500},
+            {name:"2XL",price:1500},
+            {name:"3XL",price:1500},
+            {name:"4XL",price:1500}
 
         ]
 

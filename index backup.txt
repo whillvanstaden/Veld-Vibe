@@ -112,7 +112,7 @@
                         <h3>Men's Parka Jackets</h3>
 
                      <div class="sizes">
-    S - 5XL: <strong>R1680</strong>
+    S - 5XL: <strong>R1500</strong>
 
 
     6XL - 10XL: <strong>R1950</strong>
@@ -141,7 +141,7 @@
                         <h3>Ladies' Parka Jackets</h3>
 
                     <div class="sizes">
-    S - 5XL: <strong>R1680</strong>
+    S - 5XL: <strong>R1500</strong>
 
    
     6XL - 10XL: <strong>R1950</strong>
@@ -169,7 +169,7 @@
 
                         <div class="sizes">
                             5XS - XS: <strong>R1400</strong> |
-                            S - 4XL: <strong>R1680</strong>
+                            S - 4XL: <strong>R1500</strong>
                         </div>
 
                         <div class="sizes spacer"></div>

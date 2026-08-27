@@ -112,7 +112,7 @@ href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css"
             <p>S–5XL</p>
 
             <p class="price">
-                From R1680
+                From R1500
             </p>
 
             <button class="btn">
