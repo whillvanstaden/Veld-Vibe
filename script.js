@@ -671,14 +671,14 @@ function createCartModal() {
             <div class="cart-buttons">
 
                 <button
-                    class="hero-button"
+                    class="action-button action-button--secondary"
                     id="continueShopping"
                 >
                     CONTINUE SHOPPING
                 </button>
 
                 <button
-                    class="hero-button"
+                    class="action-button"
                     id="cartCheckout"
                 >
                     CHECKOUT
