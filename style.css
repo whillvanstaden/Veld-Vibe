@@ -3009,7 +3009,7 @@ align-items:start;
 
 @media (max-width: 600px) {
 
-    .hero {
+    .hero {s
         width: 100%;
         padding: 10px !important;
     }
