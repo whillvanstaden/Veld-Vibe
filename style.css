@@ -55,7 +55,7 @@ ul{
         rgba(255,245,230,0.15),
         rgba(255,245,230,0.15)
     ),
-    url("images/hero-background.png");
+    url("images/hero-background.webp");
 
     background-size: cover;
     background-position: center;
@@ -3002,4 +3002,55 @@ align-items:start;
     border-radius: 20px !important;
 
     z-index: 100 !important;
+}
+/* =====================================================
+   MOBILE HERO — TALL / READABLE VERSION
+===================================================== */
+
+@media (max-width: 600px){
+
+    .hero{
+        width:100%;
+        padding:10px;
+    }
+
+    .hero-card{
+        width:100%;
+        min-height:620px;
+        height:620px;
+
+        background-size:auto 620px;
+        background-position:25% center;
+        background-repeat:no-repeat;
+
+        border-radius:24px;
+        overflow:hidden;
+    }
+
+    .hero-grid{
+        min-height:620px;
+        height:620px;
+    }
+
+    .hero-content{
+        display:none;
+    }
+
+    .hero-button{
+        right:16px;
+        bottom:18px;
+
+        width:170px;
+        height:54px;
+
+        font-size:13px;
+        gap:8px;
+
+        border-radius:12px;
+    }
+
+    .hero-button svg{
+        width:16px;
+        height:16px;
+    }
 }
