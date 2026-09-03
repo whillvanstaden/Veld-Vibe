@@ -3004,53 +3004,51 @@ align-items:start;
     z-index: 100 !important;
 }
 /* =====================================================
-   MOBILE HERO — TALL / READABLE VERSION
+   MOBILE HERO — LARGE READABLE PROMOTION
 ===================================================== */
 
-@media (max-width: 600px){
+@media (max-width: 600px) {
 
-    .hero{
-        width:100%;
-        padding:10px;
+    .hero {
+        width: 100%;
+        padding: 10px !important;
     }
 
-    .hero-card{
-        width:100%;
-        min-height:620px;
-        height:620px;
+    .hero-card {
+        width: 100% !important;
+        height: 620px !important;
+        min-height: 620px !important;
 
-        background-size:auto 620px;
-        background-position:25% center;
-        background-repeat:no-repeat;
+        background-size: auto 620px !important;
+        background-position: 25% center !important;
+        background-repeat: no-repeat !important;
 
-        border-radius:24px;
-        overflow:hidden;
+        border-radius: 24px !important;
+        overflow: hidden !important;
     }
 
-    .hero-grid{
-        min-height:620px;
-        height:620px;
+    .hero-grid {
+        width: 100% !important;
+        height: 620px !important;
+        min-height: 620px !important;
     }
 
-    .hero-content{
-        display:none;
+    .hero-content {
+        display: none !important;
     }
 
-    .hero-button{
-        right:16px;
-        bottom:18px;
+    .hero-button {
+        position: absolute !important;
 
-        width:170px;
-        height:54px;
+        right: 16px !important;
+        bottom: 18px !important;
 
-        font-size:13px;
-        gap:8px;
+        width: 170px !important;
+        height: 54px !important;
 
-        border-radius:12px;
-    }
+        font-size: 13px !important;
+        gap: 8px !important;
 
-    .hero-button svg{
-        width:16px;
-        height:16px;
+        border-radius: 12px !important;
     }
 }
