@@ -402,6 +402,38 @@ ul{
    SECTION 2 - GERMAN PARKAS
 ===================================================== */
 
+.exchange-reassurance {
+    box-sizing: border-box;
+    width: calc(100% - 40px);
+    max-width: 900px;
+    margin: 0 auto 36px;
+    padding: 22px 24px;
+    text-align: center;
+    background: #faf5eb;
+    border: 1px solid #c7a064;
+    border-radius: 14px;
+    color: #3d2d1f;
+}
+
+.exchange-reassurance strong {
+    display: block;
+    font-size: clamp(20px, 3vw, 26px);
+}
+
+.exchange-reassurance p {
+    margin: 8px 0;
+    font-size: 15px;
+    line-height: 1.6;
+}
+
+.exchange-reassurance a {
+    color: #68401a;
+    font-size: 14px;
+    font-weight: 600;
+    text-decoration: underline;
+    text-underline-offset: 3px;
+}
+
 .parkas{
     padding:110px 30px;
     background:#efe7db;
