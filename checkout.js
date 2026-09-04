@@ -41,9 +41,11 @@ if (
 // PRODUCT DATABASE
 // ======================================
 
-// TEMPORARY PAYMENT TEST: keep saved men's cart prices at R50 for payment.
+// Restore normal men's prices, including carts saved during the payment test.
 cart.filter(item => item.product === "mens").forEach(item => {
-    Object.values(item.sizes || {}).forEach(size => { size.price = 50; });
+    Object.entries(item.sizes || {}).forEach(([name, size]) => {
+        size.price = ["6XL", "7XL", "8XL", "9XL", "10XL"].includes(name) ? 1700 : 1500;
+    });
 });
 
 const products = {

@@ -123,9 +123,6 @@ laceup: {
 
 }
 };
-// TEMPORARY PAYMENT TEST: remove this override to restore normal men's prices.
-products.mens.sizes.forEach(size => { size.price = 50; });
-
 let selectedProduct = "";
 let selectedSizes = {};
 
@@ -138,9 +135,12 @@ let cart = JSON.parse(
     localStorage.getItem("veldVibeCart")
 ) || [];
 
-// TEMPORARY PAYMENT TEST: also reprice men's jackets in saved carts.
+// Refresh saved men's cart items using the normal catalogue prices.
 cart.filter(item => item.product === "mens").forEach(item => {
-    Object.values(item.sizes || {}).forEach(size => { size.price = 50; });
+    Object.entries(item.sizes || {}).forEach(([name, size]) => {
+        const catalogueSize = products.mens.sizes.find(entry => entry.name === name);
+        if (catalogueSize) size.price = catalogueSize.price;
+    });
 });
 
 // ======================================
