@@ -1880,6 +1880,27 @@ align-items:start;
     color:#d6b27a;
 }
 
+.showroom-code{
+    margin:20px 0;
+    padding:16px;
+    text-align:center;
+    border:1px solid #b77a2c;
+    border-radius:10px;
+    color:#e7b85f;
+    font-size:22px;
+}
+
+#showroomCopyStatus{
+    min-height:28px;
+    margin:12px 0;
+    color:#e7b85f;
+}
+
+.collection-modal-content{
+    max-height:90vh;
+    overflow-y:auto;
+}
+
 .collection-modal-content h2{
     font-family:'Barlow Condensed',sans-serif;
 
@@ -2720,8 +2741,12 @@ align-items:start;
 
 .checkout-product h3 {
 
-    margin-bottom: 12px;
+    margin: 0 0 12px;
 
+}
+
+#checkoutItems > .checkout-product:first-child {
+    padding-top: 0;
 }
 
 

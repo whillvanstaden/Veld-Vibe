@@ -41,6 +41,11 @@ if (
 // PRODUCT DATABASE
 // ======================================
 
+// TEMPORARY PAYMENT TEST: keep saved men's cart prices at R50 for payment.
+cart.filter(item => item.product === "mens").forEach(item => {
+    Object.values(item.sizes || {}).forEach(size => { size.price = 50; });
+});
+
 const products = {
 
     mens: {
@@ -70,39 +75,11 @@ const products = {
 // DELIVERY
 // ======================================
 
-// Preserve 0 for Collection.
-// Do NOT use "|| 100" here because
-// JavaScript treats 0 as false.
-
-let deliveryCost;
-
-if (
-    order.delivery !== undefined &&
-    order.delivery !== null
-) {
-
-    deliveryCost =
-        Number(order.delivery);
-
-} else {
-
-    const savedDelivery =
-        localStorage.getItem(
-            "veldVibeDelivery"
-        );
-
-    if (savedDelivery !== null) {
-
-        deliveryCost =
-            Number(savedDelivery);
-
-    } else {
-
-        deliveryCost = 100;
-
-    }
-
-}
+// Online orders are courier-only, including carts saved before this change.
+const deliveryCost = 0;
+const deliveryMethod = "courier";
+localStorage.setItem("veldVibeDelivery", "0");
+order.delivery = "0";
 
 
 // ======================================
@@ -200,7 +177,7 @@ function updateDeliveryDisplay() {
 
 
     if (
-        deliveryCost === 100
+        deliveryMethod === "courier"
     ) {
 
         // COURIER
@@ -584,9 +561,7 @@ function updateTotals() {
     if (deliveryElement) {
 
         deliveryElement.innerHTML =
-            deliveryCost === 100
-                ? "Courier (+R100)"
-                : "Collection - Alberton";
+            "FREE";
 
     }
 
@@ -618,7 +593,7 @@ function updateCheckoutButton() {
 
 
     if (
-        deliveryCost === 100
+        deliveryMethod === "courier"
     ) {
 
         checkoutButton.innerHTML =
@@ -858,7 +833,7 @@ if (checkoutButton) {
             // ============================
 
             if (
-                deliveryCost === 100
+                deliveryMethod === "courier"
             ) {
 
                 const address =

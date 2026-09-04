@@ -123,6 +123,9 @@ laceup: {
 
 }
 };
+// TEMPORARY PAYMENT TEST: remove this override to restore normal men's prices.
+products.mens.sizes.forEach(size => { size.price = 50; });
+
 let selectedProduct = "";
 let selectedSizes = {};
 
@@ -135,6 +138,10 @@ let cart = JSON.parse(
     localStorage.getItem("veldVibeCart")
 ) || [];
 
+// TEMPORARY PAYMENT TEST: also reprice men's jackets in saved carts.
+cart.filter(item => item.product === "mens").forEach(item => {
+    Object.values(item.sizes || {}).forEach(size => { size.price = 50; });
+});
 
 // ======================================
 // SAVE CART
@@ -504,10 +511,7 @@ if (addToCartButton) {
             );
 
 
-        const delivery =
-            deliveryInput
-                ? Number(deliveryInput.value)
-                : 100;
+        const delivery = 0; // Free courier shipping for online orders.
 
 
         // Find this product in the cart.
@@ -735,10 +739,7 @@ function createCartModal() {
         );
 
 
-    const delivery =
-        savedDelivery !== null
-            ? Number(savedDelivery)
-            : 100;
+    const delivery = 0; // Free courier shipping; ignore legacy fees.
 
 
     // ======================================
@@ -1214,6 +1215,19 @@ function orderProduct(product) {
 // ======================================
 // COLLECTION POPUP
 // ======================================
+
+const copyShowroomCode = document.getElementById("copyShowroomCode");
+if (copyShowroomCode) {
+    copyShowroomCode.addEventListener("click", async () => {
+        const status = document.getElementById("showroomCopyStatus");
+        try {
+            await navigator.clipboard.writeText("VV1");
+            status.textContent = "Code VV1 copied. Present it in the showroom.";
+        } catch {
+            status.textContent = "Please copy or show this code in store: VV1";
+        }
+    });
+}
 
 const collectionButton =
     document.querySelector(".collection-info-btn");
