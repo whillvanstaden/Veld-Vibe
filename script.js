@@ -124,6 +124,8 @@ laceup: {
 }
 };
 let selectedProduct = "";
+products.mens.sizes.find(size => size.name === "5XL").soldOut = true;
+products.ladies.sizes.find(size => size.name === "5XL").soldOut = true;
 let selectedSizes = {};
 
 
@@ -288,6 +290,7 @@ function openBuyModal(product) {
         // ADD ONE OF THIS SIZE
 
         function addSize() {
+            if (size.soldOut) return;
 
             if (!selectedSizes[size.name]) {
 
@@ -359,6 +362,15 @@ function openBuyModal(product) {
             removeSize
         );
 
+
+        if (size.soldOut) {
+            row.classList.add("is-sold-out");
+            sizeButton.innerHTML = `${size.name}<span class="sold-out-label">Sold out</span>`;
+            sizeButton.disabled = true;
+            sizeButton.setAttribute("aria-label", `${size.name} — Sold out`);
+            minusButton.disabled = true;
+            plusButton.disabled = true;
+        }
 
         row.appendChild(sizeButton);
 

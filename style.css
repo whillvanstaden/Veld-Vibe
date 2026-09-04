@@ -2730,6 +2730,29 @@ align-items:start;
    CHECKOUT CART
 ====================================== */
 
+#sizeOptions .is-sold-out .size-btn,
+#sizeOptions .is-sold-out .size-btn:hover {
+    background: #e8e1d7;
+    color: #766b5d;
+    border: 1px dashed #a89b89;
+    cursor: not-allowed;
+    box-shadow: none;
+}
+
+.sold-out-label {
+    display: block;
+    font-size: 10px;
+    line-height: 1.3;
+    text-transform: uppercase;
+    letter-spacing: .5px;
+}
+
+#sizeOptions .is-sold-out .size-minus,
+#sizeOptions .is-sold-out .size-plus,
+#sizeOptions .is-sold-out .size-quantity {
+    visibility: hidden;
+}
+
 .checkout-product {
 
     padding: 15px 0;

@@ -736,6 +736,10 @@ if (checkoutButton) {
 
     checkoutButton.onclick =
         async function () {
+            if (cart.some(item => ["mens", "ladies"].includes(item.product) && Number(item.sizes?.["5XL"]?.quantity) > 0)) {
+                alert("5XL is sold out for men's and ladies' jackets. Please use EDIT CART to remove that size before paying.");
+                return;
+            }
 
             if (
                 cart.length === 0
@@ -931,7 +935,13 @@ if (checkoutButton) {
                                             totals.total,
 
                                         itemName:
-                                            itemName
+                                            itemName,
+
+                                        address:
+                                            address.value.trim(),
+
+                                        cart:
+                                            cart
 
                                     })
 
