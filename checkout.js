@@ -2,6 +2,11 @@
 // VELD VIBE CHECKOUT SYSTEM
 // ======================================
 
+const paymentBackendUrl = "https://veld-vibe.onrender.com";
+
+// Start waking the free payment service while the customer completes checkout.
+fetch(`${paymentBackendUrl}/health`, { cache: "no-store" }).catch(() => {});
+
 
 // ======================================
 // LOAD ORDER
@@ -894,6 +899,11 @@ if (checkoutButton) {
                 checkoutButton.innerHTML =
                     "CONNECTING TO PAYFAST...";
 
+                const paymentWaitMessage = setTimeout(() => {
+                    checkoutButton.innerHTML =
+                        "PREPARING SECURE PAYMENT — PLEASE WAIT...";
+                }, 2500);
+
 
                 try {
 
@@ -904,7 +914,7 @@ if (checkoutButton) {
 
                     const response =
                        await fetch(
-    "https://veld-vibe.onrender.com/create-payment",
+    `${paymentBackendUrl}/create-payment`,
                             {
 
                                 method:
@@ -1026,10 +1036,14 @@ if (checkoutButton) {
 
                     );
 
+                    clearTimeout(paymentWaitMessage);
+
 
                 }
 
                 catch (error) {
+
+                    clearTimeout(paymentWaitMessage);
 
                     console.error(
                         "PayFast error:",

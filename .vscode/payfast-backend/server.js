@@ -15,6 +15,10 @@ app.use(cors());
 app.use(express.urlencoded({ extended: false }));
 app.use(express.json());
 
+app.get("/health", (req, res) => {
+    res.status(200).json({ status: "ok" });
+});
+
 const pool = new Pool({
     connectionString: process.env.DATABASE_URL,
     ssl: { rejectUnauthorized: true }

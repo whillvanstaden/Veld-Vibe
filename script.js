@@ -151,6 +151,15 @@ const specialOrderFinishes = [
     "Pink", "Black", "Grey", "Purple"
 ];
 
+const paymentBackendUrl = "https://veld-vibe.onrender.com";
+let paymentBackendWarmupStarted = false;
+
+function warmPaymentBackend() {
+    if (paymentBackendWarmupStarted) return;
+    paymentBackendWarmupStarted = true;
+    fetch(`${paymentBackendUrl}/health`, { cache: "no-store" }).catch(() => {});
+}
+
 
 // ======================================
 // CART
@@ -189,6 +198,8 @@ function saveCart() {
 // ======================================
 
 function openBuyModal(product) {
+
+    warmPaymentBackend();
 
     const item = products[product];
     const isFootwear = ["chelsea", "laceup"].includes(product);

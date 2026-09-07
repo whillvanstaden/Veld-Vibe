@@ -4,7 +4,7 @@ const vm = require('node:vm');
 const fs = require('node:fs');
 const path = require('node:path');
 // Test without loading local credentials, connecting to a database, or sending payments/email.
-const express = () => ({ set() {}, use() {}, post() {} });
+const express = () => ({ set() {}, use() {}, get() {}, post() {} });
 express.json = express.urlencoded = () => () => {};
 const context = {
     require(name) {
@@ -82,7 +82,12 @@ function harness() {
     const orders = new Map();
     const emails = [];
     const state = { valid: true, emailFailure: false, databaseFailure: false };
-    const app = { set() {}, use() {}, post(route, handler) { routes[route] = handler; } };
+    const app = {
+        set() {},
+        use() {},
+        get(route, handler) { routes[route] = handler; },
+        post(route, handler) { routes[route] = handler; }
+    };
     const express = () => app;
     express.json = express.urlencoded = () => () => {};
     const query = async (sql, params = []) => {
