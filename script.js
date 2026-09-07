@@ -121,12 +121,20 @@ laceup: {
     image: "images/Lace-up Vellie Shoe.png",
 
     sizes: [
+        {name: "1", price: 850},
+        {name: "2", price: 850},
+        {name: "3", price: 850},
+        {name: "4", price: 850},
         {name: "5", price: 850},
         {name: "6", price: 850},
         {name: "7", price: 850},
         {name: "8", price: 850},
         {name: "9", price: 850},
-        {name: "10", price: 850}
+        {name: "10", price: 850},
+        {name: "11", price: 850},
+        {name: "12", price: 850},
+        {name: "13", price: 850},
+        {name: "14", price: 850}
     ]
 
 }
@@ -183,6 +191,7 @@ function saveCart() {
 function openBuyModal(product) {
 
     const item = products[product];
+    const isFootwear = ["chelsea", "laceup"].includes(product);
 
     selectedProduct = product;
     selectedSizes = {};
@@ -214,12 +223,21 @@ function openBuyModal(product) {
     sizeContainer.innerHTML = "";
 
     sizeSelectionLabel.textContent =
-        product === "chelsea" ? "US Size" : "Select Size";
+        isFootwear ? "US Size" : "Select Size";
 
     const shoeSelectionGroup = document.getElementById("shoeSelectionGroup");
     const shoeSelection = document.getElementById("shoeSelection");
-    shoeSelectionGroup.hidden = product !== "chelsea";
-    shoeSelection.value = "";
+    shoeSelectionGroup.hidden = !isFootwear;
+    shoeSelection.innerHTML = product === "chelsea" ? `
+        <option value="">Select Shoe</option>
+        <option value="Left shoe">Left shoe</option>
+        <option value="Middle shoe">Middle shoe</option>
+        <option value="Right shoe">Right shoe</option>
+    ` : `
+        <option value="">Select Shoe</option>
+        <option value="Left shoe">Left shoe</option>
+        <option value="Right shoe">Right shoe</option>
+    `;
     shoeSelection.onchange = function () {
         selectedShoe = this.value;
         updateProductTotal();
@@ -228,7 +246,7 @@ function openBuyModal(product) {
     const finishSelectionGroup = document.getElementById("finishSelectionGroup");
     const finishSelection = document.getElementById("finishSelection");
     const finishWaitNotice = document.getElementById("finishWaitNotice");
-    finishSelectionGroup.hidden = product !== "chelsea";
+    finishSelectionGroup.hidden = !isFootwear;
     finishSelection.value = "";
     finishWaitNotice.hidden = true;
     finishSelection.onchange = function () {
@@ -237,12 +255,12 @@ function openBuyModal(product) {
         updateProductTotal();
     };
 
-    if (product === "chelsea") {
+    if (isFootwear) {
 
         const sizeSelect = document.createElement("select");
 
         sizeSelect.className = "boot-size-select";
-        sizeSelect.setAttribute("aria-label", "Select Chelsea Boot US size");
+        sizeSelect.setAttribute("aria-label", `Select ${item.title.replace("BUY ", "")} US size`);
         sizeSelect.innerHTML = `
             <option value="">Select Size</option>
             ${item.sizes.map(size => `<option value="${size.name}">${size.name}</option>`).join("")}
@@ -521,7 +539,7 @@ function updateProductTotal() {
 
         checkoutButton.disabled =
             totalQuantity === 0 ||
-            (selectedProduct === "chelsea" && (!selectedShoe || !selectedFinish));
+            (["chelsea", "laceup"].includes(selectedProduct) && (!selectedShoe || !selectedFinish));
 
     }
 
@@ -582,7 +600,7 @@ if (addToCartButton) {
 
         if (
             Object.keys(selectedSizes).length === 0 ||
-            (selectedProduct === "chelsea" && (!selectedShoe || !selectedFinish))
+            (["chelsea", "laceup"].includes(selectedProduct) && (!selectedShoe || !selectedFinish))
         ) {
 
             return;
@@ -608,7 +626,7 @@ if (addToCartButton) {
             cart.find(
                 item =>
                     item.product === selectedProduct &&
-                    (selectedProduct !== "chelsea" ||
+                    (!["chelsea", "laceup"].includes(selectedProduct) ||
                         (item.shoe === selectedShoe && item.finish === selectedFinish))
             );
 
@@ -622,7 +640,7 @@ if (addToCartButton) {
 
                 product: selectedProduct,
 
-                ...(selectedProduct === "chelsea" ? {
+                ...(["chelsea", "laceup"].includes(selectedProduct) ? {
                     shoe: selectedShoe,
                     finish: selectedFinish,
                     specialOrder: specialOrderFinishes.includes(selectedFinish)

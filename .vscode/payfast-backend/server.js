@@ -65,10 +65,12 @@ function normaliseCart(cart) {
     const specialOrderFinishes = ["Red", "Blue", "Green", "Orange", "Yellow", "Pink", "Black", "Grey", "Purple"];
     return cart.map(item => {
         if (!productNames[item.product] || !item.sizes || !Object.keys(item.sizes).length) throw new Error("Invalid product");
-        const shoe = item.product === "chelsea" ? String(item.shoe || "") : "";
-        if (item.product === "chelsea" && !["Left shoe", "Middle shoe", "Right shoe"].includes(shoe)) throw new Error("Invalid Chelsea Boot shoe selection");
-        const finish = item.product === "chelsea" ? String(item.finish || "") : "";
-        if (item.product === "chelsea" && ![...standardFinishes, ...specialOrderFinishes].includes(finish)) throw new Error("Invalid Chelsea Boot colour finish");
+        const isFootwear = ["chelsea", "laceup"].includes(item.product);
+        const shoe = isFootwear ? String(item.shoe || "") : "";
+        const permittedShoes = item.product === "chelsea" ? ["Left shoe", "Middle shoe", "Right shoe"] : ["Left shoe", "Right shoe"];
+        if (isFootwear && !permittedShoes.includes(shoe)) throw new Error("Invalid footwear shoe selection");
+        const finish = isFootwear ? String(item.finish || "") : "";
+        if (isFootwear && ![...standardFinishes, ...specialOrderFinishes].includes(finish)) throw new Error("Invalid footwear colour finish");
         const specialOrder = specialOrderFinishes.includes(finish);
         const sizes = {};
         for (const [name, value] of Object.entries(item.sizes)) {
@@ -81,10 +83,8 @@ function normaliseCart(cart) {
             } else if (item.product === "kids") {
                 if (["5XS", "4XS", "3XS", "2XS", "XS"].includes(name)) price = 1400;
                 else if (regular.slice(0, 7).includes(name)) price = 1500;
-            } else if (item.product === "chelsea" && Array.from({ length: 14 }, (_, index) => String(index + 1)).includes(name)) {
-                price = 990;
-            } else if (item.product === "laceup" && ["5", "6", "7", "8", "9", "10"].includes(name)) {
-                price = 850;
+            } else if (["chelsea", "laceup"].includes(item.product) && Array.from({ length: 14 }, (_, index) => String(index + 1)).includes(name)) {
+                price = item.product === "chelsea" ? 990 : 850;
             }
             const quantity = Number(value.quantity);
             if (!price || !Number.isInteger(quantity) || quantity < 1 || quantity > 100) throw new Error("Invalid size or quantity");

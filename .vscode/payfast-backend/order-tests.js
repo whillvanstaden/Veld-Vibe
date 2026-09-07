@@ -28,6 +28,7 @@ test('other products retain catalogue pricing', () => {
     for (const [product, size, price] of [['ladies', 'XS', 1480], ['kids', 'XS', 1400], ['chelsea', '1', 990], ['chelsea', '14', 990], ['laceup', '8', 850]]) {
         const item = { product, sizes: { [size]: { quantity: 1 } } };
         if (product === 'chelsea') Object.assign(item, { shoe: 'Middle shoe', finish: 'Tan' });
+        if (product === 'laceup') Object.assign(item, { shoe: 'Right shoe', finish: 'Kurk' });
         assert.equal(orderRows(normaliseCart([item]))[0].price, price);
     }
 });
@@ -50,6 +51,17 @@ test('Chelsea Boot validates colour and marks five-business-day finishes', () =>
     assert.equal(standard.specialOrder, false);
     assert.equal(special.specialOrder, true);
     assert.equal(orderRows([special])[0].finish, 'Purple');
+});
+test('Lace-up Vellie accepts sizes 1 through 14, left/right shoes and colour finishes', () => {
+    for (const size of ['1', '14']) {
+        const item = normaliseCart([{ product: 'laceup', shoe: 'Left shoe', finish: 'Tan', sizes: { [size]: { quantity: 1 } } }])[0];
+        assert.equal(orderRows([item])[0].price, 850);
+    }
+    assert.throws(() => normaliseCart([{ product: 'laceup', shoe: 'Middle shoe', finish: 'Tan', sizes: { '8': { quantity: 1 } } }]));
+    assert.throws(() => normaliseCart([{ product: 'laceup', shoe: 'Right shoe', finish: 'White', sizes: { '8': { quantity: 1 } } }]));
+    const special = normaliseCart([{ product: 'laceup', shoe: 'Right shoe', finish: 'Blue', sizes: { '8': { quantity: 1 } } }])[0];
+    assert.equal(special.specialOrder, true);
+    assert.equal(orderRows([special])[0].shoe, 'Right shoe');
 });
 test('invalid carts cannot create orders', () => {
     for (const cart of [[], [{ product: 'unknown', sizes: {} }], [{ product: 'mens', sizes: { XS: { quantity: 1 } } }], [{ product: 'mens', sizes: { L: { quantity: -1 } } }]]) {
