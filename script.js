@@ -96,12 +96,20 @@ chelsea: {
     image: "images/Slip-on Chelsea Boot - Tan.png",
 
     sizes: [
+        {name: "1", price: 990},
+        {name: "2", price: 990},
+        {name: "3", price: 990},
+        {name: "4", price: 990},
         {name: "5", price: 990},
         {name: "6", price: 990},
         {name: "7", price: 990},
         {name: "8", price: 990},
         {name: "9", price: 990},
-        {name: "10", price: 990}
+        {name: "10", price: 990},
+        {name: "11", price: 990},
+        {name: "12", price: 990},
+        {name: "13", price: 990},
+        {name: "14", price: 990}
     ]
 
 },
@@ -127,6 +135,13 @@ let selectedProduct = "";
 products.mens.sizes.find(size => size.name === "5XL").soldOut = true;
 products.ladies.sizes.find(size => size.name === "5XL").soldOut = true;
 let selectedSizes = {};
+let selectedShoe = "";
+let selectedFinish = "";
+
+const specialOrderFinishes = [
+    "Red", "Blue", "Green", "Orange", "Yellow",
+    "Pink", "Black", "Grey", "Purple"
+];
 
 
 // ======================================
@@ -171,6 +186,8 @@ function openBuyModal(product) {
 
     selectedProduct = product;
     selectedSizes = {};
+    selectedShoe = "";
+    selectedFinish = "";
 
     document.getElementById("buyModal").style.display = "flex";
 
@@ -191,7 +208,64 @@ function openBuyModal(product) {
     const sizeContainer =
         document.getElementById("sizeOptions");
 
+    const sizeSelectionLabel =
+        document.getElementById("sizeSelectionLabel");
+
     sizeContainer.innerHTML = "";
+
+    sizeSelectionLabel.textContent =
+        product === "chelsea" ? "US Size" : "Select Size";
+
+    const shoeSelectionGroup = document.getElementById("shoeSelectionGroup");
+    const shoeSelection = document.getElementById("shoeSelection");
+    shoeSelectionGroup.hidden = product !== "chelsea";
+    shoeSelection.value = "";
+    shoeSelection.onchange = function () {
+        selectedShoe = this.value;
+        updateProductTotal();
+    };
+
+    const finishSelectionGroup = document.getElementById("finishSelectionGroup");
+    const finishSelection = document.getElementById("finishSelection");
+    const finishWaitNotice = document.getElementById("finishWaitNotice");
+    finishSelectionGroup.hidden = product !== "chelsea";
+    finishSelection.value = "";
+    finishWaitNotice.hidden = true;
+    finishSelection.onchange = function () {
+        selectedFinish = this.value;
+        finishWaitNotice.hidden = !specialOrderFinishes.includes(selectedFinish);
+        updateProductTotal();
+    };
+
+    if (product === "chelsea") {
+
+        const sizeSelect = document.createElement("select");
+
+        sizeSelect.className = "boot-size-select";
+        sizeSelect.setAttribute("aria-label", "Select Chelsea Boot US size");
+        sizeSelect.innerHTML = `
+            <option value="">Select Size</option>
+            ${item.sizes.map(size => `<option value="${size.name}">${size.name}</option>`).join("")}
+        `;
+
+        sizeSelect.addEventListener("change", function () {
+            selectedSizes = {};
+
+            if (this.value) {
+                const selectedSize = item.sizes.find(size => size.name === this.value);
+                selectedSizes[this.value] = {
+                    quantity: 1,
+                    price: Number(selectedSize.price)
+                };
+            }
+
+            updateProductTotal();
+        });
+
+        sizeContainer.appendChild(sizeSelect);
+        updateProductTotal();
+        return;
+    }
 
 
     item.sizes.forEach(size => {
@@ -446,7 +520,8 @@ function updateProductTotal() {
     if (checkoutButton) {
 
         checkoutButton.disabled =
-            totalQuantity === 0;
+            totalQuantity === 0 ||
+            (selectedProduct === "chelsea" && (!selectedShoe || !selectedFinish));
 
     }
 
@@ -506,7 +581,8 @@ if (addToCartButton) {
     addToCartButton.onclick = function () {
 
         if (
-            Object.keys(selectedSizes).length === 0
+            Object.keys(selectedSizes).length === 0 ||
+            (selectedProduct === "chelsea" && (!selectedShoe || !selectedFinish))
         ) {
 
             return;
@@ -531,7 +607,9 @@ if (addToCartButton) {
         let cartProduct =
             cart.find(
                 item =>
-                    item.product === selectedProduct
+                    item.product === selectedProduct &&
+                    (selectedProduct !== "chelsea" ||
+                        (item.shoe === selectedShoe && item.finish === selectedFinish))
             );
 
 
@@ -543,6 +621,12 @@ if (addToCartButton) {
             cartProduct = {
 
                 product: selectedProduct,
+
+                ...(selectedProduct === "chelsea" ? {
+                    shoe: selectedShoe,
+                    finish: selectedFinish,
+                    specialOrder: specialOrderFinishes.includes(selectedFinish)
+                } : {}),
 
                 sizes: {}
 
@@ -895,6 +979,9 @@ function renderCart() {
                 <h3>
                     ${product.title}
                 </h3>
+
+                ${cartProduct.shoe ? `<p class="cart-product-option"><strong>Shoe:</strong> ${cartProduct.shoe}</p>` : ""}
+                ${cartProduct.finish ? `<p class="cart-product-option"><strong>Colour:</strong> ${cartProduct.finish}${cartProduct.specialOrder ? " — allow 5 business days" : ""}</p>` : ""}
 
             `;
 

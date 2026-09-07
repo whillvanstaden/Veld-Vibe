@@ -261,8 +261,9 @@ Save R400 on every Parka now. Buy ahead and save big — if not for yourself, gi
                             100% Genuine Leather
                         </div>
 
-                        <div class="vellie-price">
-                            R990
+                        <div class="vellie-price vellie-sale-price" aria-label="Was R1,250, now R990">
+                            <span class="vellie-was-price">Was R1,250</span>
+                            <span class="vellie-now-price">Now R990</span>
                         </div>
 
                         <a href="#" class="parka-button" onclick="openBuyModal('chelsea'); return false;">
@@ -439,6 +440,49 @@ Save R400 on every Parka now. Buy ahead and save big — if not for yourself, gi
 
         </div>
 
+        <div id="shoeSelectionGroup" class="modal-group" hidden>
+
+            <label for="shoeSelection">Choose Your Shoe</label>
+
+            <select id="shoeSelection" class="boot-size-select">
+                <option value="">Select Shoe</option>
+                <option value="Left shoe">Left shoe</option>
+                <option value="Middle shoe">Middle shoe</option>
+                <option value="Right shoe">Right shoe</option>
+            </select>
+
+        </div>
+
+        <div id="finishSelectionGroup" class="modal-group" hidden>
+
+            <label for="finishSelection">Choose Your Colour Finish</label>
+
+            <select id="finishSelection" class="boot-size-select">
+                <option value="">Select Colour Finish</option>
+                <optgroup label="Normally available">
+                    <option value="Kurk">Kurk</option>
+                    <option value="Chocolate Brown">Chocolate Brown</option>
+                    <option value="Tan">Tan</option>
+                </optgroup>
+                <optgroup label="Special order — allow 5 business days">
+                    <option value="Red">Red</option>
+                    <option value="Blue">Blue</option>
+                    <option value="Green">Green</option>
+                    <option value="Orange">Orange</option>
+                    <option value="Yellow">Yellow</option>
+                    <option value="Pink">Pink</option>
+                    <option value="Black">Black</option>
+                    <option value="Grey">Grey</option>
+                    <option value="Purple">Purple</option>
+                </optgroup>
+            </select>
+
+            <p id="finishWaitNotice" class="finish-wait-notice" hidden>
+                Special-order colour: please allow 5 business days before dispatch.
+            </p>
+
+        </div>
+
 
         <!-- =================================================
              SIZE SELECTION
@@ -446,7 +490,7 @@ Save R400 on every Parka now. Buy ahead and save big — if not for yourself, gi
 
         <div class="modal-group">
 
-            <label>Select Size</label>
+            <label id="sizeSelectionLabel">Select Size</label>
 
             <div id="sizeOptions"></div>
 

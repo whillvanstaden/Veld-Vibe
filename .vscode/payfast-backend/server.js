@@ -45,6 +45,9 @@ function orderRows(cart) {
     return (cart || []).flatMap(product =>
         Object.entries(product.sizes || {}).map(([size, item]) => ({
             product: product.product,
+            shoe: product.shoe || "",
+            finish: product.finish || "",
+            specialOrder: Boolean(product.specialOrder),
             size,
             quantity: Number(item.quantity),
             price: Number(item.price)
@@ -58,8 +61,15 @@ function normaliseCart(cart) {
     if (!Array.isArray(cart) || !cart.length || cart.length > 30) throw new Error("Invalid cart");
     const regular = ["S", "M", "L", "XL", "2XL", "3XL", "4XL", "5XL"];
     const large = ["6XL", "7XL", "8XL", "9XL", "10XL"];
+    const standardFinishes = ["Kurk", "Chocolate Brown", "Tan"];
+    const specialOrderFinishes = ["Red", "Blue", "Green", "Orange", "Yellow", "Pink", "Black", "Grey", "Purple"];
     return cart.map(item => {
         if (!productNames[item.product] || !item.sizes || !Object.keys(item.sizes).length) throw new Error("Invalid product");
+        const shoe = item.product === "chelsea" ? String(item.shoe || "") : "";
+        if (item.product === "chelsea" && !["Left shoe", "Middle shoe", "Right shoe"].includes(shoe)) throw new Error("Invalid Chelsea Boot shoe selection");
+        const finish = item.product === "chelsea" ? String(item.finish || "") : "";
+        if (item.product === "chelsea" && ![...standardFinishes, ...specialOrderFinishes].includes(finish)) throw new Error("Invalid Chelsea Boot colour finish");
+        const specialOrder = specialOrderFinishes.includes(finish);
         const sizes = {};
         for (const [name, value] of Object.entries(item.sizes)) {
             if (["mens", "ladies"].includes(item.product) && name === "5XL") throw new Error("5XL is sold out");
@@ -71,21 +81,23 @@ function normaliseCart(cart) {
             } else if (item.product === "kids") {
                 if (["5XS", "4XS", "3XS", "2XS", "XS"].includes(name)) price = 1400;
                 else if (regular.slice(0, 7).includes(name)) price = 1500;
-            } else if (["5", "6", "7", "8", "9", "10"].includes(name)) {
-                price = item.product === "chelsea" ? 990 : 850;
+            } else if (item.product === "chelsea" && Array.from({ length: 14 }, (_, index) => String(index + 1)).includes(name)) {
+                price = 990;
+            } else if (item.product === "laceup" && ["5", "6", "7", "8", "9", "10"].includes(name)) {
+                price = 850;
             }
             const quantity = Number(value.quantity);
             if (!price || !Number.isInteger(quantity) || quantity < 1 || quantity > 100) throw new Error("Invalid size or quantity");
             sizes[name] = { quantity, price };
         }
-        return { product: item.product, sizes };
+        return { product: item.product, ...(shoe ? { shoe, finish, specialOrder } : {}), sizes };
     });
 }
 
 async function sendOrderEmail(order) {
     const customer = order.customer;
     const rows = orderRows(order.cart);
-    const itemsHtml = rows.map(item => `<tr><td>${escapeHtml(productNames[item.product] || item.product)}</td><td>${escapeHtml(item.size)}</td><td>${item.quantity}</td><td>R${item.price}</td></tr>`).join("");
+    const itemsHtml = rows.map(item => `<tr><td>${escapeHtml(productNames[item.product] || item.product)}</td><td>${escapeHtml(item.shoe || "—")}</td><td>${escapeHtml(item.finish || "—")}${item.specialOrder ? " (allow 5 business days)" : ""}</td><td>${escapeHtml(item.size)}</td><td>${item.quantity}</td><td>R${item.price}</td></tr>`).join("");
     const response = await fetch("https://api.resend.com/emails", {
         signal: AbortSignal.timeout(15000),
         method: "POST",
@@ -98,7 +110,7 @@ async function sendOrderEmail(order) {
             from: "Veld Vibe Orders <orders@orders.veldvibesa.co.za>",
             to: ["veldvibeza@gmail.com"],
             subject: `PAID ORDER ${order.payment_id} — R${order.amount}`,
-            html: `<h1>New paid Veld Vibe order</h1><p><strong>Payment reference:</strong> ${escapeHtml(order.payment_id)}</p><p><strong>Customer:</strong> ${escapeHtml(customer.firstName)} ${escapeHtml(customer.surname)}<br><strong>Phone:</strong> ${escapeHtml(customer.phoneNumber)}<br><strong>Email:</strong> ${escapeHtml(customer.email || "Not supplied")}<br><strong>Delivery address:</strong><br>${escapeHtml(customer.address).replace(/\n/g, "<br>")}</p><table border="1" cellpadding="8" cellspacing="0"><tr><th>Product</th><th>Size</th><th>Qty</th><th>Unit price</th></tr>${itemsHtml}</table><h2>Total paid: R${escapeHtml(order.amount)}</h2>`
+            html: `<h1>New paid Veld Vibe order</h1><p><strong>Payment reference:</strong> ${escapeHtml(order.payment_id)}</p><p><strong>Customer:</strong> ${escapeHtml(customer.firstName)} ${escapeHtml(customer.surname)}<br><strong>Phone:</strong> ${escapeHtml(customer.phoneNumber)}<br><strong>Email:</strong> ${escapeHtml(customer.email || "Not supplied")}<br><strong>Delivery address:</strong><br>${escapeHtml(customer.address).replace(/\n/g, "<br>")}</p><table border="1" cellpadding="8" cellspacing="0"><tr><th>Product</th><th>Shoe</th><th>Colour</th><th>Size</th><th>Qty</th><th>Unit price</th></tr>${itemsHtml}</table><h2>Total paid: R${escapeHtml(order.amount)}</h2>`
         })
     });
     if (!response.ok) throw new Error(`Resend failed: ${response.status}`);

@@ -1088,6 +1088,25 @@ ul{
     margin-bottom:35px;
 }
 
+.vellie-sale-price {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 8px 14px;
+}
+
+.vellie-was-price {
+    color: #766657;
+    font-size: 25px;
+    font-weight: 600;
+    text-decoration: line-through;
+    text-decoration-thickness: 2px;
+}
+
+.vellie-now-price {
+    color: #b8782d;
+}
+
 .vellie-button{
     display:flex;
     justify-content:center;
@@ -3339,4 +3358,38 @@ align-items:start;
     color: #e7b85f !important;
     flex-shrink: 0;
 }
+}
+
+/* Compact Chelsea Boot size selector */
+#sizeOptions .boot-size-select {
+    width: 100%;
+    min-height: 46px;
+    padding: 10px 42px 10px 14px;
+    border: 2px solid #b96b16;
+    border-radius: 8px;
+    background: #fffaf0;
+    color: #24170d;
+    font: 700 16px/1.2 Arial, sans-serif;
+    cursor: pointer;
+}
+
+#sizeOptions .boot-size-select:focus {
+    outline: 3px solid rgba(185, 107, 22, 0.25);
+    outline-offset: 2px;
+}
+
+#shoeSelectionGroup[hidden],
+#finishSelectionGroup[hidden],
+#finishWaitNotice[hidden] {
+    display: none !important;
+}
+
+.finish-wait-notice {
+    margin: 10px 0 0;
+    padding: 10px 12px;
+    border-left: 4px solid #b96b16;
+    border-radius: 5px;
+    background: #fff0d5;
+    color: #59310d;
+    font-weight: 700;
 }

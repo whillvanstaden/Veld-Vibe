@@ -25,9 +25,31 @@ test('men sizes use trusted catalogue prices, not supplied R50', () => {
     assert.equal(rows.reduce((sum, row) => sum + row.price * row.quantity, 0), 4900);
 });
 test('other products retain catalogue pricing', () => {
-    for (const [product, size, price] of [['ladies', 'XS', 1480], ['kids', 'XS', 1400], ['chelsea', '8', 990], ['laceup', '8', 850]]) {
-        assert.equal(orderRows(normaliseCart([{ product, sizes: { [size]: { quantity: 1 } } }]))[0].price, price);
+    for (const [product, size, price] of [['ladies', 'XS', 1480], ['kids', 'XS', 1400], ['chelsea', '1', 990], ['chelsea', '14', 990], ['laceup', '8', 850]]) {
+        const item = { product, sizes: { [size]: { quantity: 1 } } };
+        if (product === 'chelsea') Object.assign(item, { shoe: 'Middle shoe', finish: 'Tan' });
+        assert.equal(orderRows(normaliseCart([item]))[0].price, price);
     }
+});
+test('Chelsea Boot only accepts US sizes 1 through 14', () => {
+    for (const size of ['0', '15', 'XS']) {
+        assert.throws(() => normaliseCart([{ product: 'chelsea', shoe: 'Left shoe', finish: 'Kurk', sizes: { [size]: { quantity: 1 } } }]));
+    }
+});
+test('Chelsea Boot requires and preserves the pictured shoe selection', () => {
+    assert.throws(() => normaliseCart([{ product: 'chelsea', sizes: { '8': { quantity: 1 } } }]));
+    assert.throws(() => normaliseCart([{ product: 'chelsea', shoe: 'Back shoe', finish: 'Tan', sizes: { '8': { quantity: 1 } } }]));
+    const rows = orderRows(normaliseCart([{ product: 'chelsea', shoe: 'Right shoe', finish: 'Chocolate Brown', sizes: { '8': { quantity: 1 } } }]));
+    assert.equal(rows[0].shoe, 'Right shoe');
+});
+test('Chelsea Boot validates colour and marks five-business-day finishes', () => {
+    assert.throws(() => normaliseCart([{ product: 'chelsea', shoe: 'Left shoe', sizes: { '8': { quantity: 1 } } }]));
+    assert.throws(() => normaliseCart([{ product: 'chelsea', shoe: 'Left shoe', finish: 'White', sizes: { '8': { quantity: 1 } } }]));
+    const standard = normaliseCart([{ product: 'chelsea', shoe: 'Left shoe', finish: 'Kurk', sizes: { '8': { quantity: 1 } } }])[0];
+    const special = normaliseCart([{ product: 'chelsea', shoe: 'Left shoe', finish: 'Purple', sizes: { '8': { quantity: 1 } } }])[0];
+    assert.equal(standard.specialOrder, false);
+    assert.equal(special.specialOrder, true);
+    assert.equal(orderRows([special])[0].finish, 'Purple');
 });
 test('invalid carts cannot create orders', () => {
     for (const cart of [[], [{ product: 'unknown', sizes: {} }], [{ product: 'mens', sizes: { XS: { quantity: 1 } } }], [{ product: 'mens', sizes: { L: { quantity: -1 } } }]]) {

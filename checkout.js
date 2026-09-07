@@ -294,6 +294,9 @@ function displayCart() {
                     ${productTitle}
                 </h3>
 
+                ${cartProduct.shoe ? `<p class="checkout-product-option"><strong>Shoe:</strong> ${cartProduct.shoe}</p>` : ""}
+                ${cartProduct.finish ? `<p class="checkout-product-option"><strong>Colour:</strong> ${cartProduct.finish}${cartProduct.specialOrder ? " — allow 5 business days" : ""}</p>` : ""}
+
             `;
 
 
