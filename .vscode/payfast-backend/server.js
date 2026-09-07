@@ -19,6 +19,28 @@ app.get("/health", (req, res) => {
     res.status(200).json({ status: "ok" });
 });
 
+// Expose only the minimum state needed by the return page. An order becomes
+// paid exclusively through the validated PayFast ITN handler below.
+app.get("/orders/:paymentId/status", async (req, res) => {
+    const paymentId = String(req.params.paymentId || "");
+    if (!/^VV-[0-9a-f-]{36}$/i.test(paymentId)) {
+        return res.status(400).json({ paid: false });
+    }
+    try {
+        const result = await pool.query(
+            "SELECT status, amount FROM orders WHERE payment_id=$1",
+            [paymentId]
+        );
+        const order = result.rows[0];
+        res.set("Cache-Control", "no-store");
+        if (!order) return res.status(404).json({ paid: false });
+        if (order.status !== "paid") return res.json({ paid: false });
+        return res.json({ paid: true, value: Number(order.amount), currency: "ZAR" });
+    } catch {
+        return res.status(503).json({ paid: false });
+    }
+});
+
 const pool = new Pool({
     connectionString: process.env.DATABASE_URL,
     ssl: { rejectUnauthorized: true }

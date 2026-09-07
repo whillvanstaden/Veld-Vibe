@@ -119,9 +119,9 @@ function harness() {
         }
     };
     vm.runInNewContext(fs.readFileSync(path.join(__dirname, 'server.js'), 'utf8'), ctx);
-    async function call(route, body, ip = '192.0.2.1') {
-        const response = { code: 200, status(code) { this.code = code; return this; }, sendStatus(code) { this.code = code; }, json(value) { this.body = value; } };
-        await routes[route]({ body, ip }, response);
+    async function call(route, body, ip = '192.0.2.1', params = {}) {
+        const response = { code: 200, headers: {}, set(name, value) { this.headers[name] = value; return this; }, status(code) { this.code = code; return this; }, sendStatus(code) { this.code = code; }, json(value) { this.body = value; return this; } };
+        await routes[route]({ body, ip, params }, response);
         return response;
     }
     function notification(id, overrides = {}) {
@@ -133,6 +133,20 @@ function harness() {
     return { call, notification, orders, emails, state };
 }
 const customerOrder = { firstName: 'Test', surname: 'Customer', phoneNumber: '0800000000', email: 'test@example.test', address: 'Test address\nTest town', amount: 1500, cart: [{ product: 'mens', sizes: { L: { quantity: 1, price: 1500 } } }] };
+test('browser Purchase status exposes server-confirmed amount only after valid PayFast ITN', async () => {
+    const h = harness();
+    const created = await h.call('/create-payment', customerOrder);
+    const id = created.body.paymentData.m_payment_id;
+    const before = await h.call('/orders/:paymentId/status', {}, undefined, { paymentId: id });
+    assert.equal(before.body.paid, false);
+    assert.equal(before.body.value, undefined);
+    await h.call('/payfast/notify', h.notification(id));
+    const after = await h.call('/orders/:paymentId/status', {}, undefined, { paymentId: id });
+    assert.equal(after.body.paid, true);
+    assert.equal(after.body.value, 1500);
+    assert.equal(after.body.currency, 'ZAR');
+    assert.equal(after.headers['Cache-Control'], 'no-store');
+});
 test('full order saved before payment; valid confirmation emails all details only once', async () => {
     const h = harness();
     const created = await h.call('/create-payment', customerOrder);

@@ -15,6 +15,7 @@
         }(window,document,'script','https://connect.facebook.net/en_US/fbevents.js');
         fbq('init', pixelId);
         fbq('track', 'PageView');
+        window.dispatchEvent(new CustomEvent("veldVibeMetaReady"));
     }
 
     function saveChoice(choice) {

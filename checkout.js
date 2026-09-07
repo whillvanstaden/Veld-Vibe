@@ -1036,6 +1036,15 @@ if (checkoutButton) {
 
                     );
 
+                    // The success page uses this opaque reference to ask the
+                    // backend whether PayFast's verified ITN marked it paid.
+                    localStorage.setItem(
+                        "veldVibePendingPayment",
+                        JSON.stringify({
+                            paymentId: result.paymentData.m_payment_id
+                        })
+                    );
+
                     clearTimeout(paymentWaitMessage);
 
 
