@@ -3360,9 +3360,10 @@ align-items:start;
 }
 }
 
-/* Compact Chelsea Boot size selector */
-#sizeOptions .boot-size-select {
+/* Compact footwear selectors */
+.buy-modal-content .boot-size-select {
     width: 100%;
+    max-width: 380px;
     min-height: 46px;
     padding: 10px 42px 10px 14px;
     border: 2px solid #b96b16;
@@ -3373,9 +3374,14 @@ align-items:start;
     cursor: pointer;
 }
 
-#sizeOptions .boot-size-select:focus {
+.buy-modal-content .boot-size-select:focus {
     outline: 3px solid rgba(185, 107, 22, 0.25);
     outline-offset: 2px;
+}
+
+#sizeOptions .boot-size-select {
+    grid-column: 1 / -1;
+    min-width: 210px;
 }
 
 #shoeSelectionGroup[hidden],
