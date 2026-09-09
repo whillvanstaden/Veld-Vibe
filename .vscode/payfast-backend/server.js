@@ -56,9 +56,11 @@ async function prepareDatabase() {
             cart JSONB NOT NULL,
             paid_at TIMESTAMPTZ,
             email_sent_at TIMESTAMPTZ,
+            pending_email_id TEXT,
             created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
         )
     `);
+    await pool.query("ALTER TABLE orders ADD COLUMN IF NOT EXISTS pending_email_id TEXT");
 }
 
 function escapeHtml(value) {
@@ -140,6 +142,45 @@ async function sendOrderEmail(order) {
         })
     });
     if (!response.ok) throw new Error(`Resend failed: ${response.status}`);
+}
+
+async function schedulePendingOrderEmail(order) {
+    const customer = order.customer;
+    const rows = orderRows(order.cart);
+    const itemsHtml = rows.map(item => `<tr><td>${escapeHtml(productNames[item.product] || item.product)}</td><td>${escapeHtml(item.shoe || "—")}</td><td>${escapeHtml(item.finish || "—")}${item.specialOrder ? " (allow 5 business days)" : ""}</td><td>${escapeHtml(item.size)}</td><td>${item.quantity}</td><td>R${item.price}</td></tr>`).join("");
+    const response = await fetch("https://api.resend.com/emails", {
+        signal: AbortSignal.timeout(15000),
+        method: "POST",
+        headers: {
+            Authorization: `Bearer ${process.env.RESEND_API_KEY}`,
+            "Content-Type": "application/json",
+            "Idempotency-Key": `pending-order/${order.payment_id}`
+        },
+        body: JSON.stringify({
+            from: "Veld Vibe Orders <orders@orders.veldvibesa.co.za>",
+            to: ["veldvibeza@gmail.com"],
+            subject: `PAYMENT NOT COMPLETED ${order.payment_id} — R${order.amount}`,
+            html: `<h1>Payment attempt awaiting confirmation</h1><p>This customer completed the Veld Vibe checkout and was sent to PayFast, but payment had not been confirmed after 30 minutes.</p><p><strong>Payment reference:</strong> ${escapeHtml(order.payment_id)}</p><p><strong>Customer:</strong> ${escapeHtml(customer.firstName)} ${escapeHtml(customer.surname)}<br><strong>Phone:</strong> ${escapeHtml(customer.phoneNumber)}<br><strong>Email:</strong> ${escapeHtml(customer.email || "Not supplied")}<br><strong>Delivery address:</strong><br>${escapeHtml(customer.address).replace(/\n/g, "<br>")}</p><table border="1" cellpadding="8" cellspacing="0"><tr><th>Product</th><th>Shoe</th><th>Colour</th><th>Size</th><th>Qty</th><th>Unit price</th></tr>${itemsHtml}</table><h2>Attempted total: R${escapeHtml(order.amount)}</h2><p><strong>Do not fulfil this order unless PayFast later confirms payment.</strong></p>`,
+            scheduled_at: new Date(Date.now() + 30 * 60 * 1000).toISOString()
+        })
+    });
+    if (!response.ok) throw new Error(`Resend scheduling failed: ${response.status}`);
+    const result = await response.json();
+    if (!result.id) throw new Error("Resend scheduling returned no email ID");
+    return result.id;
+}
+
+async function cancelPendingOrderEmail(order) {
+    if (!order.pending_email_id) return;
+    const response = await fetch(`https://api.resend.com/emails/${encodeURIComponent(order.pending_email_id)}/cancel`, {
+        signal: AbortSignal.timeout(15000),
+        method: "POST",
+        headers: {
+            Authorization: `Bearer ${process.env.RESEND_API_KEY}`,
+            "Content-Type": "application/json"
+        }
+    });
+    if (!response.ok) throw new Error(`Resend cancellation failed: ${response.status}`);
 }
 
 // Lock the stored order while sending, so simultaneous callbacks cannot send duplicates.
@@ -551,6 +592,18 @@ app.post(
                 [paymentData.m_payment_id, paymentData.amount, JSON.stringify({ firstName, surname, phoneNumber, email, address }), JSON.stringify(pricedCart)]
             );
 
+            try {
+                const pendingEmailId = await schedulePendingOrderEmail({
+                    payment_id: paymentData.m_payment_id,
+                    amount: paymentData.amount,
+                    customer: { firstName, surname, phoneNumber, email, address },
+                    cart: pricedCart
+                });
+                await pool.query("UPDATE orders SET pending_email_id=$2 WHERE payment_id=$1", [paymentData.m_payment_id, pendingEmailId]);
+            } catch (error) {
+                console.error("Could not schedule pending-order email", paymentData.m_payment_id, error.message);
+            }
+
 
 
 
@@ -637,6 +690,8 @@ app.post("/payfast/notify", async (req, res) => {
         if (!order || Math.round(Number(data.amount_gross) * 100) !== Math.round(Number(order.amount) * 100)) return res.sendStatus(400);
         if (data.payment_status !== "COMPLETE") return res.sendStatus(200);
         await pool.query("UPDATE orders SET status='paid', paid_at=COALESCE(paid_at,NOW()) WHERE payment_id=$1", [order.payment_id]);
+        try { await cancelPendingOrderEmail(order); }
+        catch (error) { console.error("Could not cancel pending-order email", order.payment_id, error.message); }
         await deliverPaidOrder(order.payment_id);
         res.sendStatus(200);
     } catch (error) {

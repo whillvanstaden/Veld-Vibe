@@ -81,7 +81,7 @@ function harness() {
     const routes = {};
     const orders = new Map();
     const emails = [];
-    const state = { valid: true, emailFailure: false, databaseFailure: false };
+    const state = { valid: true, emailFailure: false, databaseFailure: false, cancelledEmails: [] };
     const app = {
         set() {},
         use() {},
@@ -94,6 +94,7 @@ function harness() {
         if (state.databaseFailure) throw new Error('Simulated database failure');
         const order = orders.get(params[0]);
         if (sql.startsWith('INSERT')) orders.set(params[0], { payment_id: params[0], amount: params[1], customer: JSON.parse(params[2]), cart: JSON.parse(params[3]), status: 'pending' });
+        if (sql.includes('SET pending_email_id')) order.pending_email_id = params[1];
         if (sql.includes("SET status='paid'")) order.status = 'paid';
         if (sql.includes('SET email_sent_at')) order.email_sent_at = 'sent';
         return { rows: sql.startsWith('SELECT') && order ? [order] : [] };
@@ -112,8 +113,12 @@ function harness() {
         async fetch(url, options) {
             if (url.includes('resend.com')) {
                 if (state.emailFailure) return { ok: false, status: 503 };
+                if (url.endsWith('/cancel')) {
+                    state.cancelledEmails.push(url.split('/').at(-2));
+                    return { ok: true, json: async () => ({ id: url.split('/').at(-2) }) };
+                }
                 emails.push(JSON.parse(options.body));
-                return { ok: true };
+                return { ok: true, json: async () => ({ id: `email-${emails.length}` }) };
             }
             return { ok: true, text: async () => state.valid ? 'VALID' : 'INVALID' };
         }
@@ -153,15 +158,18 @@ test('full order saved before payment; valid confirmation emails all details onl
     assert.equal(created.code, 200);
     const id = created.body.paymentData.m_payment_id;
     assert.equal(h.orders.get(id).customer.address, customerOrder.address);
-    assert.equal(h.emails.length, 0);
+    assert.equal(h.emails.length, 1);
+    assert.equal(h.emails[0].scheduled_at != null, true);
+    assert.match(h.emails[0].subject, /PAYMENT NOT COMPLETED/);
     assert.equal((await h.call('/payfast/notify', h.notification(id))).code, 200);
-    assert.equal(h.emails.length, 1);
-    assert.match(h.emails[0].html, /Men&#039;s Parka Jacket/);
-    assert.match(h.emails[0].html, /Test address<br>Test town/);
-    assert.match(h.emails[0].html, /0800000000/);
-    assert.equal(h.emails[0].to[0], 'veldvibeza@gmail.com');
+    assert.equal(h.emails.length, 2);
+    assert.equal(h.state.cancelledEmails.length, 1);
+    assert.match(h.emails[1].html, /Men&#039;s Parka Jacket/);
+    assert.match(h.emails[1].html, /Test address<br>Test town/);
+    assert.match(h.emails[1].html, /0800000000/);
+    assert.equal(h.emails[1].to[0], 'veldvibeza@gmail.com');
     await h.call('/payfast/notify', h.notification(id));
-    assert.equal(h.emails.length, 1);
+    assert.equal(h.emails.length, 2);
 });
 test('wrong amount, signature, source, merchant and validation cannot mark orders paid', async () => {
     for (const kind of ['amount', 'signature', 'ip', 'merchant', 'remote']) {
@@ -173,7 +181,8 @@ test('wrong amount, signature, source, merchant and validation cannot mark order
         if (kind === 'remote') h.state.valid = false;
         assert.equal((await h.call('/payfast/notify', payload, kind === 'ip' ? '192.0.2.2' : undefined)).code, 400);
         assert.equal(h.orders.get(id).status, 'pending');
-        assert.equal(h.emails.length, 0);
+        assert.equal(h.emails.length, 1);
+        assert.match(h.emails[0].subject, /PAYMENT NOT COMPLETED/);
     }
 });
 test('failed email retains paid order for retry', async () => {
@@ -186,7 +195,7 @@ test('failed email retains paid order for retry', async () => {
     assert.equal(h.orders.get(id).email_sent_at, undefined);
     h.state.emailFailure = false;
     assert.equal((await h.call('/payfast/notify', h.notification(id))).code, 200);
-    assert.equal(h.emails.length, 1);
+    assert.equal(h.emails.length, 2);
 });
 test('failed database never returns a payable form', async () => {
     const h = harness(); h.state.databaseFailure = true;
@@ -194,12 +203,13 @@ test('failed database never returns a payable form', async () => {
     assert.equal(response.code, 500);
     assert.equal(response.body.paymentData, undefined);
 });
-test('unpaid notification sends nothing; sold-out requests fail clearly', async () => {
+test('unpaid notification sends no paid email; sold-out requests fail clearly', async () => {
     const h = harness();
     const created = await h.call('/create-payment', customerOrder);
     const id = created.body.paymentData.m_payment_id;
     await h.call('/payfast/notify', h.notification(id, { payment_status: 'CANCELLED' }));
-    assert.equal(h.emails.length, 0);
+    assert.equal(h.emails.length, 1);
+    assert.match(h.emails[0].subject, /PAYMENT NOT COMPLETED/);
     const rejected = await h.call('/create-payment', { ...customerOrder, cart: [{ product: 'ladies', sizes: { '5XL': { quantity: 1 } } }] });
     assert.equal(rejected.code, 400);
 });
