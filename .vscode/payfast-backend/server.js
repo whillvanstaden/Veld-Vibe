@@ -16,7 +16,7 @@ app.use(express.urlencoded({ extended: false }));
 app.use(express.json());
 
 app.get("/health", (req, res) => {
-    res.status(200).json({ status: "ok" });
+    res.status(200).json({ status: "ok", pendingOrderEmails: "30-minute-delay" });
 });
 
 // Expose only the minimum state needed by the return page. An order becomes
