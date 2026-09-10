@@ -744,6 +744,7 @@ if (checkoutButton) {
 
     checkoutButton.onclick =
         async function () {
+            if (checkoutButton.disabled) return;
             if (cart.some(item => ["mens", "ladies"].includes(item.product) && Number(item.sizes?.["5XL"]?.quantity) > 0)) {
                 alert("5XL is sold out for men's and ladies' jackets. Please use EDIT CART to remove that size before paying.");
                 return;
@@ -898,6 +899,8 @@ if (checkoutButton) {
 
                 checkoutButton.innerHTML =
                     "CONNECTING TO PAYFAST...";
+
+                window.veldVibeTracking?.send('PaySecurely', cart, products);
 
                 const paymentWaitMessage = setTimeout(() => {
                     checkoutButton.innerHTML =

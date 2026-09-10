@@ -3399,3 +3399,6 @@ align-items:start;
     color: #59310d;
     font-weight: 700;
 }
+
+.payment-reassurance { font-size: 14px; line-height: 1.6; text-align: center; margin: 12px 0; }
+.payment-reassurance a { color: inherit; text-decoration: underline; }

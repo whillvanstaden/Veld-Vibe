@@ -140,6 +140,11 @@ laceup: {
 }
 };
 let selectedProduct = "";
+let selectionAdded = false;
+window.addEventListener('pageshow', () => {
+    const button = document.getElementById('cartCheckout');
+    if (button) button.disabled = false;
+});
 products.mens.sizes.find(size => size.name === "5XL").soldOut = true;
 products.ladies.sizes.find(size => size.name === "5XL").soldOut = true;
 let selectedSizes = {};
@@ -202,9 +207,11 @@ function openBuyModal(product) {
     warmPaymentBackend();
 
     const item = products[product];
+    window.veldVibeTracking?.buyNow(product, item);
     const isFootwear = ["chelsea", "laceup"].includes(product);
 
     selectedProduct = product;
+    selectionAdded = false;
     selectedSizes = {};
     selectedShoe = "";
     selectedFinish = "";
@@ -608,6 +615,7 @@ const addToCartButton =
 if (addToCartButton) {
 
     addToCartButton.onclick = function () {
+        if (selectionAdded) return;
 
         if (
             Object.keys(selectedSizes).length === 0 ||
@@ -709,6 +717,10 @@ if (addToCartButton) {
 
         saveCart();
 
+
+        selectionAdded = true;
+        const addedItems = [{ product: selectedProduct, sizes: selectedSizes }];
+        window.veldVibeTracking?.send('AddToCart', addedItems, products);
 
         // Close the product popup.
 
@@ -847,6 +859,7 @@ function createCartModal() {
     "cartCheckout"
 ).onclick = function () {
 
+    if (this.disabled) return;
     if (cart.length === 0) {
 
         return;
@@ -932,6 +945,8 @@ function createCartModal() {
     // GO TO CHECKOUT
     // ======================================
 
+    this.disabled = true;
+    window.veldVibeTracking?.send('InitiateCheckout', cart, products);
     window.location.href =
         "checkout.html";
 
