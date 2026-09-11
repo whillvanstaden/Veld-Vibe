@@ -2440,6 +2440,19 @@ align-items:start;
 
 }
 
+.checkout-privacy-note{
+    margin: 12px 0 0;
+    font-size: 13px;
+    line-height: 1.6;
+    color: #59432f;
+}
+
+.checkout-privacy-note a{
+    color: inherit;
+    text-decoration: underline;
+    text-underline-offset: 2px;
+}
+
 #deliveryAddress textarea{
 
     width: 100%;
