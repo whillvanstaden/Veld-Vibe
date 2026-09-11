@@ -42,7 +42,7 @@ test('success page requires paid backend status and deduplicates reloads',async(
 // Execute the real storefront handlers against a small DOM, with Meta/network
 // replaced by local recorders. No production requests or events are sent.
 function pageHarness(initial={}) {
- const events=[], actions=[], elements=new Map(), stored=new Map(Object.entries(initial));
+ const events=[], actions=[], elements=new Map(), stored=new Map(Object.entries(initial)), listeners={};
  stored.set('veldVibeMetaConsent',initial.veldVibeMetaConsent || 'granted');
  function element() {
   return {style:{},children:[],disabled:false,value:'Test',innerHTML:'',classList:{add(){},remove(){}},
@@ -51,7 +51,7 @@ function pageHarness(initial={}) {
  }
  const get=id=>{if(!elements.has(id))elements.set(id,element());return elements.get(id);};
  const context=vm.createContext({
-  window:{fbq:(...a)=>{events.push(a);actions.push(a[1]);},addEventListener(){},location:{}},
+  window:{fbq:(...a)=>{events.push(a);actions.push(a[1]);},addEventListener(name,fn){(listeners[name] ||= []).push(fn);},location:{}},
   document:{getElementById:get,querySelector:()=>null,querySelectorAll:()=>[],createElement:element,body:element()},
   localStorage:{getItem:k=>stored.get(k)||null,setItem:(k,v)=>stored.set(k,v),removeItem:k=>stored.delete(k)},
   location:{hostname:'localhost'},console,alert(){},setTimeout(){return 1;},clearTimeout(){},
@@ -59,7 +59,7 @@ function pageHarness(initial={}) {
  });
  const run=s=>vm.runInContext(s,context);
  run(fs.readFileSync(path.join(__dirname,'meta-events.js'),'utf8'));
- return {events,actions,get,run};
+ return {events,actions,get,run,context,show:persisted=>(listeners.pageshow || []).forEach(fn=>fn({persisted}))};
 }
 function shopHarness(consent='granted') {
  const h=pageHarness({veldVibeMetaConsent:consent});
@@ -113,4 +113,117 @@ test('real PaySecurely handler sends full value before starting payment and not 
  assert.deepEqual(h.actions,['PaySecurely','payment request']);
  assert.equal(h.events[0][2].value,4390);assert.equal(h.events[0][2].currency,'ZAR');
  assert.equal(h.events.some(e=>e[1]==='Purchase'),false);
+});
+
+test('real cart checkout handler dispatches exactly once with full total, including repeated click',()=>{
+ const h=shopHarness();h.clickBuy(0);
+ const row=h.get('sizeOptions').children.find(row=>row.children[0].innerHTML==='8XL');
+ row.children[0].listeners.click();row.children[0].listeners.click();
+ h.get('continueCheckout').onclick();
+ const source=fs.readFileSync(path.join(__dirname,'script.js'),'utf8');
+ const marker=source.search(/"cartCheckout"\s*\)\.onclick/);
+ assert.notEqual(marker,-1);
+ const start=source.lastIndexOf('document.getElementById(',marker);
+ const end=source.indexOf('};',source.indexOf('"checkout.html"',marker))+2;
+ h.run(source.slice(start,end));
+ const button=h.get('cartCheckout');button.onclick();button.onclick();
+ const calls=h.events.filter(e=>e[1]==='InitiateCheckout');
+ assert.equal(calls.length,1);assert.equal(calls[0][2].value,3400);
+ assert.equal(calls[0][2].num_items,2);
+ assert.equal(h.run('window.location.href'),'checkout.html');
+});
+
+test('loading checkout does not add InitiateCheckout after cart navigation',()=>{
+ const h=pageHarness({veldVibeCart:JSON.stringify(item(1700))});
+ h.run(fs.readFileSync(path.join(__dirname,'checkout.js'),'utf8'));
+ assert.equal(h.events.filter(e=>e[1]==='InitiateCheckout').length,0);
+ assert.equal(h.events.length,0);
+});
+
+test('loading tracking helper twice does not register handlers or dispatch extra events',()=>{
+ const h=pageHarness();
+ h.run(fs.readFileSync(path.join(__dirname,'meta-events.js'),'utf8'));
+ h.run("window.veldVibeTracking.send('AddToCart', [{product:'mens',sizes:{'8XL':{price:1700,quantity:1}}}])");
+ assert.deepEqual(h.events.map(e=>e[1]),['AddToCart']);
+});
+
+test('production pages import each script once and have no competing payment submit handler',()=>{
+ for(const file of ['index.html','checkout.html']) {
+  const html=fs.readFileSync(path.join(__dirname,file),'utf8');
+  const scripts=[...html.matchAll(/<script[^>]*src="([^"?]+)/g)].map(m=>m[1]);
+  assert.equal(scripts.length,new Set(scripts).size);
+  assert.equal(scripts.filter(s=>s==='meta-events.js').length,1);
+  assert.equal(scripts.filter(s=>s==='meta-pixel.js').length,1);
+  assert.equal(/fbq\s*\(/.test(html),false);
+ }
+ const html=fs.readFileSync(path.join(__dirname,'checkout.html'),'utf8');
+ const tag=html.match(/<button\b[^>]*id="checkoutButton"[^>]*>/)[0];
+ assert.match(tag,/type="button"/);assert.doesNotMatch(tag,/onclick|onsubmit/);
+ const source=fs.readFileSync(path.join(__dirname,'checkout.js'),'utf8');
+ assert.doesNotMatch(source,/addEventListener\(\s*['"]submit|\.onsubmit\s*=/);
+});
+
+test('one valid PaySecurely action and an overlapping click produce exactly one event/request',async()=>{
+ const h=pageHarness({veldVibeCart:JSON.stringify(item(1700))});
+ h.run(fs.readFileSync(path.join(__dirname,'checkout.js'),'utf8'));
+ const button=h.get('checkoutButton');
+ await Promise.all([button.onclick(),button.onclick()]);
+ assert.deepEqual(h.actions,['PaySecurely','payment request']);
+ assert.equal(h.events.filter(e=>e[1]==='PaySecurely').length,1);
+});
+
+test('returning from PayFast restores payment button and submits corrected phone once',async()=>{
+ const h=pageHarness({veldVibeCart:JSON.stringify(item(1700))});
+ const requests=[], submitted=[];
+ h.context.fetch=async(url,options)=>{
+  if(!url.endsWith('/create-payment')) return {};
+  requests.push(JSON.parse(options.body));
+  return {ok:true,json:async()=>({success:true,paymentUrl:'https://gateway.example.test',paymentData:{m_payment_id:'test-'+requests.length}})};
+ };
+ const createElement=h.context.document.createElement;
+ h.context.document.createElement=tag=>{
+  const el=createElement();
+  if(tag==='form') el.submit=()=>submitted.push(el);
+  return el;
+ };
+ h.run(fs.readFileSync(path.join(__dirname,'checkout.js'),'utf8'));
+ const button=h.get('checkoutButton');
+ h.get('phoneNumber').value='082444189';
+ await button.onclick();
+ assert.equal(button.disabled,true);
+ assert.equal(submitted.length,1);
+ await button.onclick();
+ assert.equal(requests.length,1);
+ // Simulate browser Back restoring the existing document after gateway rejection.
+ h.show(true);
+ assert.equal(button.disabled,false);
+ assert.equal(button.innerHTML,'PAY SECURELY');
+ assert.equal(h.events.length,1); // Returning itself emits no event.
+ h.get('phoneNumber').value='0824441892';
+ await button.onclick();
+ await button.onclick();
+ assert.equal(requests.length,2);
+ assert.equal(requests[0].phoneNumber,'082444189');
+ assert.equal(requests[1].phoneNumber,'0824441892');
+ assert.equal(requests[1].amount,1700);
+ assert.equal(submitted.length,2);
+ assert.deepEqual(h.events.map(e=>e[1]),['PaySecurely','PaySecurely']);
+ assert.equal(button.disabled,true);
+});
+
+test('ordinary pageshow does not release an active payment request',async()=>{
+ const h=pageHarness({veldVibeCart:JSON.stringify(item(1700))});
+ let release;
+ h.context.fetch=url=>url.endsWith('/create-payment')
+  ? new Promise(resolve=>{release=resolve;}) : Promise.resolve({});
+ h.run(fs.readFileSync(path.join(__dirname,'checkout.js'),'utf8'));
+ const button=h.get('checkoutButton');
+ const pending=button.onclick();
+ h.show(false);
+ assert.equal(button.disabled,true);
+ await button.onclick();
+ assert.equal(h.events.length,1);
+ release({ok:false,json:async()=>({success:false})});
+ await pending;
+ assert.equal(button.disabled,false);
 });

@@ -742,6 +742,15 @@ const checkoutButton =
 
 if (checkoutButton) {
 
+    // Back from PayFast can restore the disabled button from the browser's
+    // back/forward cache. That navigation has ended the previous attempt.
+    window.addEventListener("pageshow", event => {
+        if (event.persisted) {
+            checkoutButton.disabled = false;
+            updateCheckoutButton();
+        }
+    });
+
     checkoutButton.onclick =
         async function () {
             if (checkoutButton.disabled) return;
