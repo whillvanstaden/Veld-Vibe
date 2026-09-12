@@ -2448,6 +2448,22 @@ align-items:start;
     color: #59432f;
 }
 
+.checkout-store-note{
+    margin: 20px 0;
+    padding: 16px;
+    border: 1px solid #d8c9b3;
+    border-radius: 10px;
+    background: #f5f1eb;
+    color: #59432f;
+    font-size: 14px;
+    line-height: 1.6;
+}
+
+.checkout-store-note p{
+    margin: 10px 0 0;
+    font-size: inherit;
+}
+
 .checkout-privacy-note a{
     color: inherit;
     text-decoration: underline;
