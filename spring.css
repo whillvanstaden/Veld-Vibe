@@ -30,3 +30,7 @@ body{background:#fffbed;color:#203820}.hero{background:#80d9f3;padding:18px}.her
 .hero-content{z-index:5!important}
 .hero-card .hero-button{top:40.5%!important;left:12%!important;width:46%!important;height:8%!important;min-height:32px}
 }
+/* Final review: keep floral artwork in the campaign header only. */
+.delivery,.info-strip,.footer{background-image:none!important}
+.delivery::after,.footer::after{content:none!important}
+.delivery-icon{background:#ffe528!important;color:#244526!important}
