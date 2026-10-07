@@ -1,0 +1,32 @@
+/* Spring campaign presentation. Shopping and tracking handlers are unchanged. */
+body{background:#fffbed;color:#203820}.hero{background:#80d9f3;padding:18px}.hero-card{background-image:url('images/spring-concept.png')!important;background-size:100% auto!important;background-position:center top!important;padding:0!important;border-radius:22px}.hero-grid{aspect-ratio:1536/430!important;min-height:0!important;height:auto!important}.hero-content{position:absolute!important;inset:0!important;padding:0!important;max-width:none!important}.hero-card .hero-button{left:6%!important;top:81%!important;bottom:auto!important;right:auto!important;width:23%!important;height:16%!important;max-width:none!important;transform:none!important;opacity:0!important}.hero-card .hero-button:focus-visible{opacity:1!important;outline:3px solid #fff}.parkas,.vellies,.delivery,.size-guide-section{background:#fffbed}.parka-quality-badge{background:#ecf5d8!important;border-color:#84a849!important}.parka-quality-badge__title,.parka-quality-badge__eyebrow,h2,h3{color:#254629!important}.parka-card,.vellie-card,.info-box{border:1px solid #e4d995!important}.buy-button,.action-button{background:#ffe52a!important;color:#1b2916!important;border-color:#e8cb1c!important;border-radius:12px!important}.footer{background:#193c27!important}.footer h3{color:#ffe56a!important}.info-strip{background:#f0f4d9!important}.parkas-heading:before{content:'✿  ❧  ✿';display:block;color:#709d37;font-size:28px;letter-spacing:12px}.footer-bottom{border-color:#789551!important}
+@media(max-width:768px){.hero{padding:8px!important}.hero-card{border-radius:12px!important}.hero-grid{width:100%!important;aspect-ratio:1536/430!important}.hero-card .hero-button{font-size:10px!important}.hero-content{width:100%!important;height:100%!important}}
+/* Floral section framing: decoration never intercepts shopping controls. */
+.parkas,.size-guide,.vellies,.delivery,.info-strip,.footer{position:relative;background-image:url('images/spring-flowers.png')!important;background-repeat:no-repeat!important;background-position:left bottom!important;background-size:clamp(90px,14vw,230px)!important;padding-bottom:110px!important}
+.parkas,.vellies,.delivery{background-color:#fffbea!important}
+.size-guide{background-color:#e6f5f9!important}
+.info-strip{background-color:#e9f2cc!important}
+.parkas::after,.size-guide::after,.vellies::after,.delivery::after,.footer::after{content:'';position:absolute;right:0;top:8px;width:clamp(80px,12vw,190px);height:clamp(80px,12vw,190px);background:url('images/spring-flowers.png') center/contain no-repeat;transform:rotate(180deg);pointer-events:none;z-index:0}
+.parkas-container,.size-guide-container,.vellies-container,.delivery-container,.footer-container,.info-strip-container{position:relative;z-index:1}
+.parka-button,.collection-info-btn{background:#ffe528!important;color:#203319!important;border:2px solid #e2c315!important;border-radius:12px!important;box-shadow:0 4px 0 #c8af27!important}
+.parka-button:hover,.collection-info-btn:hover{background:#ffed67!important}
+.parka-card,.vellie-card{background:#fffdf1!important;border:2px solid #efe09b!important}
+.parka-quality-badge{background:#ffea59!important;border:2px solid #e2c315!important;border-radius:16px!important}
+.parkas-heading:before{content:none}
+.size-guide h2,.vellies h2,.delivery h2{display:table;margin-left:auto;margin-right:auto;background:#ffe957;padding:8px 30px;border-radius:14px;color:#244526!important}
+.footer{border-top:7px solid #ffe528}
+@media(max-width:700px){.parkas,.size-guide,.vellies,.delivery,.info-strip,.footer{padding-bottom:95px!important;background-size:100px!important}.parkas::after,.size-guide::after,.vellies::after,.delivery::after,.footer::after{width:65px;height:65px;top:0}.size-guide h2,.vellies h2,.delivery h2{max-width:85%;font-size:32px!important;padding:8px 18px}}
+/* Review adjustment: no floral decoration in sections 2, 3 and 4. */
+.parkas,.size-guide,.vellies{background-image:none!important}
+.parkas::after,.size-guide::after,.vellies::after{content:none!important}
+
+/* Stack both halves of the approved banner for readable mobile artwork. */
+@media(max-width:768px){
+.hero-card{background-image:none!important;background-color:#80d9f3!important}
+.hero-grid{aspect-ratio:768/860!important;display:block!important}
+.hero-grid::before,.hero-grid::after{content:"";display:block;position:absolute;left:0;width:100%;height:50%;background-image:url("images/spring-concept.png");background-size:200% auto;background-repeat:no-repeat;pointer-events:none}
+.hero-grid::before{top:0;background-position:left top}
+.hero-grid::after{top:50%;background-position:right top}
+.hero-content{z-index:5!important}
+.hero-card .hero-button{top:40.5%!important;left:12%!important;width:46%!important;height:8%!important;min-height:32px}
+}
